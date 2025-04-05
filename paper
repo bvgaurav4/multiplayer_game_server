@@ -1,0 +1,491 @@
+% This is samplepaper.tex, a sample chapter demonstrating the
+% LLNCS macro package for Springer Computer Science proceedings;
+% Version 2.21 of 2022/01/12
+%
+\documentclass[runningheads]{llncs}
+\usepackage{amsmath}
+\usepackage{caption}
+%
+\usepackage{graphicx}  % Ensure this package is included
+\usepackage{float} 
+\usepackage[a4paper, top=5.2cm, bottom=5.2cm, left=4.4cm, right=4.4cm]{geometry}
+\pdfoutput=1 
+\usepackage{subcaption} % put this in your preamble
+\usepackage[T1]{fontenc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+\usepackage{stfloats}  % In the preamble
+\usepackage{changepage}
+
+
+
+
+
+% T1 fonts will be used to generate the final print and online PDFs,
+% so please use T1 fonts in your manuscript whenever possible.
+% Other font encondings may result in incorrect characters.
+%
+\usepackage{xcolor} % for coloring
+
+\usepackage{graphicx}
+% Used for displaying a sample figure. If possible, figure files should
+% be included in EPS format.
+%
+% If you use the hyperref package, please uncomment the following two lines
+% to display URLs in blue roman font according to Springer's eBook style:
+%\usepackage{color}
+%\renewcommand\UrlFont{\color{blue}\rmfamily}
+%\urlstyle{rm}
+%
+\newcommand{\repeatthanks}{\textsuperscript{\thefootnote}}
+\begin{document}
+%
+\title{Self-Citation Anomaly Detection Using Citation Networks and LLMs}
+
+\titlerunning{Self-Citation Anomaly Detection Using Citation Networks and LLMs}
+
+%
+% \titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{
+  Farhaan Ebadulla\inst{1}\thanks{These authors contributed equally to this work.} \and
+  Gaurav B V\inst{1}\repeatthanks\and
+  H Manoj\inst{1}\repeatthanks\and
+  Arti Arya\inst{1} \repeatthanks\and
+  Nazmin Begum\inst{1} \and
+  Kruthik K\inst{1}
+}
+
+\authorrunning{F. Ebadulla, B V. Gaurav, H. Manoj, K. Kruthik et al.}
+
+\institute{
+  PES University, Electronic City, Karnataka 560100, India \\
+  \email{\{farhaan.ebadulla, bv.gaurav4, hmanojnarayan, kruthikraj2002\}@gmail.com} \\
+  \email{\{artiarya, nazmin.b\}@pes.edu}
+}
+
+%
+\maketitle          
+%
+\begin{abstract}
+Accurately evaluating research impact is crucial in academia, influencing funding, promotions, and recognition. However, exces sive self-citations distort citation metrics, undermining fair assessment. This work introduces a novel approach to detect anomalous self-citations using citation network analysis and advanced Natural Language Processing with Large Language Models. A citation network is constructed from a large-scale academic dataset, where nodes represent papers and authors, and edges capture citation relationships. Self-citation loops are identified using graph-based techniques.
+A two-stage summarization process is implemented to generate a comprehensive summary. Regular expressions facilitate citation context detection, while prompt fine-tuning through self-contrast improves the LLMs' ability to classify essential vs. non-essential citations, reducing prompt loss to 0.082. Extensive testing confirms the effectiveness of this approach, with o1-mini achieving 91.84\% accuracy on 49 self-citation cases across a set of authors.The findings provide actionable insights to enhance transparency and fairness in research evaluation. By addressing ethical concerns in scholarly publishing, this research promotes integrity and equitable academic assessments.
+
+\keywords{Anomalous Self-Citations  \and Bibliometric Analysis \and Research Ethics.}
+\end{abstract}
+%
+%
+%
+\section{Introduction}
+
+Citations are essential to academic research because they place new contributions within a larger scholarly context in addition to acknowledging earlier work. They help start academic discussions, allowing researchers to connect their work to ongoing debates and track progress in different fields. Citations play a significant role in establishing academic reputation, affecting research funding, and establishing institutional rankings using metrics like journal impact scores, citation counts, and the h-index \cite{ref_article1}.
+
+Citations play a crucial role in determining academic promotion and credibility \cite{ref_article2}, leading to challenges in citation practices, particularly regarding anomalous self-citations. Excessive or uncommon self-citations that fictitiously boost research impact measures are known as anomalous self-citations. When used deliberately to inflate research metrics, self-citations become problematic, but they are appropriate when used to situate new discoveries within an established study route.Significant differences between academic disciplines make it more difficult to identify these self-citations; established disciplines tend to follow more uniform processes, whereas new fields naturally have higher self-citation rates because there are less alternative sources.
+
+
+%Not bad idk what can be changed
+There is still a significant gap in our understanding of the ability to identify abnormal self-citations, despite the advances in technology. Semantic analysis, which can provide further understanding into citation purpose, is frequently left out of existing approaches.
+Our study tackles this issue by creating a novel, comprehensive framework for identifying and assessing unusual self-citations.  
+The primary objectives of our work are threefold:
+\begin{itemize}
+    \item Develop a scalable and robust approach for identifying potentially manipulative citation patterns
+    \item Provide an effective  classification system for understanding citation intent
+    \item Contribute to promoting transparency and fairness in academic research evaluation
+\end{itemize}
+
+This research goes beyond academic methods.Our goal is to support key players in academia, such as funding agencies, journal editors, and universities, in maintaining fair research evaluation standards. By identifying citation manipulation, our framework can help shape better policies and guidelines, promoting honesty and fairness in academic publishing. 
+
+\section{Related Work}
+Recent studies detect anomalous citation patterns using indices \cite{ref_article3}. H-index inflation shows that authors can boost metrics through strategic self-citations, while the q-index (ranging from 1 to l) helps identify such behavior. They conclude that the unfair self-citation strategy is mainly useful for authors who are less productive and who attract less citations from others. Complementing these findings, another work introduces the fi-score \cite{ref_article4}, which refines bibliometric evaluation by assessing citation reliability and identifying potential distortions beyond self-citations. Citation-based metrics often overlook Conflict of Interest (COI) in scholarly impact evaluation. The COIRank algorithm \cite{ref_article5} addresses this by analyzing collaboration patterns and citation behavior, integrating PageRank and HITS to refine rankings. Moreover, some work compares self-citation patterns among non-accredited assistant and associate professors to those of their accredited peers \cite{ref_article6}.
+
+Research on anomalous citation behavior at the journal level highlights impact factor manipulation through excessive self-citations and coordinated exchanges. A study using Deep Belief Networks (DBN), Logistic Regression, and SVM detects suspicious self-citation patterns in 6.9 percent of the empirical sample of journals from the 2014 Journal Citation Report (JCR), revealing impact factor inflation \cite{ref_article7}. The CIDRE algorithm identifies citation cartels, predicting over half of JCR-suspended journals and uncovering new groups engaging in mutual citation exchanges \cite{ref_article8}. Additionally, citation network analysis detects impact factor inflation via directed graph analysis \cite{ref_article9}, while another study quantifies reference list manipulation, exposing systematic citation coercion \cite{ref_article10}.
+
+Three graph-based methods are used to detect anomalous citation patterns. The first uses the GMAE model—a deep encoder and shallow decoder—to assess network stability through embedding-based link prediction and detect anomalies via ego-graph sampling and disturbance simulations \cite{ref_article11}. The second, GLAD \cite{ref_article12}, applies GNNs to model paper–citation relationships, combining text semantics and citation structures for anomaly detection. The third, ACTION \cite{ref_article13}, addresses heterogeneity in academic networks by integrating paper content embeddings, author–paper, and journal–paper links using NMF and semi-supervised learning. It also factors in author credibility and journal impact to detect relational citations like self-citations and citation stacking. Another approach uses sentence embeddings and the ReLy score to detect anomalous self-citations \cite{ref_article14}. A ReLy score near zero suggests self-citations are contextually valid, while a positive score indicates potential manipulation.
+Recent studies show that large language models (LLMs) \cite{ref_article15} can effectively determine citation intent, reducing reliance on manual annotation. This supports using LLMs to assess whether citations are essential, improving relevance and intent evaluation. Extracting citation contexts is key to understanding relationships between works, supporting tasks like citation purpose classification and anomaly detection. Following the method in \cite{ref_article16}, custom regex rules were developed to extract relevant citation contexts.
+
+After an extensive literature survey, the following gaps have been identified. First, unlike prior work \cite{ref_article12,ref_article13} that uses synthetic anomalies, this approach builds a dataset labeling citations as essential (contributing meaningfully) or non-essential (generic mentions). Second, these rule-based labels allow LLMs to detect anomalies more transparently than embedding-based methods \cite{ref_article11,ref_article12,ref_article13}, which often lack interpretability.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{AD-Better.PNG}
+\caption{Proposed approach for identifying anomalous self-citations}\label{Fig. 1}
+\end{figure}
+
+\section{Proposed Approach}
+
+\subsection{Data Collection and Preprocessing}
+This research uses the Aminer \cite{ref_article17} academic citation database, which contains detailed information on scholarly papers from various fields. The preprocessing involved extracting key details like paper titles, abstracts, and reference lists. To ensure a balanced representation of research communities, we used k-hop neighborhood random sampling, which maintained network structure while reducing the dataset from 5 million to 5,000 nodes for easier computation. The dataset was mostly consistent, but about 5\% of papers lacked abstracts, which we manually retrieved from the original sources.
+
+\subsection{Construction of Citation Network}
+
+The citation network is initially constructed as a heterogeneous graph where both research papers and authors serve as distinct types of nodes. The edges in this graph represent 'cited' edges between papers and 'published' edges between authors and papers. To better analyze self-citations, we modify the citation network by structuring connections between authors and papers. In this transformation,'cited' edges are represented as directed edges between papers, while 'published' edges are converted into bidirectional edges. This modification ensures that only author–paper and paper–paper edges are considered, explicitly excluding direct author–author connections to isolate paths involving self-citing papers. This approach improves efficiency by eliminating cycles involving two authors and one paper, as well as cycles including all authors, which do not represent self-citations. Additionally, we ensure that cycles are detected only for author nodes and not for paper nodes, preventing the detection of duplicate cycles. A detailed explanation of how cycles are identified for this modified graph is provided in the citation network analysis section below.
+
+
+\subsection{Citation Network Analysis} 
+In this analysis, we examine a citation network where Author1, Author2, \dots represent authors and paper1, paper2, \dots represent papers. The network is encoded as an adjacency matrix \( A \), which indicates who cites whom.
+
+Mathematically, we compute powers of \( A \) as follows:
+\[
+A^2 = A \cdot A, 
+\quad
+A^3 = A^2 \cdot A.
+\]
+
+Each entry in \( A^2 \) corresponds to the number of two-step paths between the respective nodes (authors or papers), while each entry in \( A^3 \) captures the number of three-step paths. When analyzing three-step random walks on the citation network for a particular paper node , we look for a cycle that indicates  self-citations.
+
+For example, in the first row of \( A^3 \) ({Fig. 2b}), which corresponds to Author1, the first element (the diagonal entry) is \( 3 \). This indicates there are exactly 3 distinct three-step cycles starting and ending at Author1. You can verify this by examining the graph in Fig. 3a, where you will see three distinct loops involving Author1.
+
+By identifying these loops, we can highlight potential self-citation patterns and counts of all authors within the network.
+
+
+
+For each author \( i \), we extracted cycles in the modified graph:
+
+\[
+C_i = \{ c_1, c_2, \dots, c_k \}
+\]
+
+where each \( c_j \) represents a sequence of connected nodes forming a closed path.
+ After obtaining the set of closed loops \(C_i\) for each author \(i\), we form the final self-citation graph by uniting all these loops. Here, \(c_j\) is one closed loop for author \(i\), and \(C_i\) is the list of all such loops for that author. The final set S of detected self-citing structures was:
+\[
+\mathcal{S} = \bigcup_{i \in \text{authors}} \{ c_j \mid c_j \in C_i \}
+\]
+
+\begin{figure}[ht]
+    \centering
+    %--- First row (two images side by side)
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{A1.png}
+        \caption{Original adjacency matrix showing direct connections between nodes}
+        \label{Fig: matrixA}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{A_cube1.png}
+        \caption{Cube of the adjacency matrix (\(A^3\)) illustrating paths of length three}
+        \label{Fig: matrixA3}
+    \end{subfigure}
+    \caption{Visualization of Adjacency Matrices}
+
+\end{figure}
+
+
+With this approach, we identified about 2000 self-citation loops out of 5000 nodes. It helped us detect patterns where papers with overlapping authorship formed closed paths, revealing potential anomalous citation practices.
+
+\begin{figure}[H]
+    \vskip 1em  % Space between rows
+    \begin{subfigure}[b]{0.48\textwidth}  % Adjust width as needed
+        \centering
+        \includegraphics[width=\textwidth]{graph.png}
+        \caption{Graph representation of nodes and edges as described by the adjacency matrix}
+        \label{Fig: graphA}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Self-Citation Loop.PNG}
+        \caption{Self-Citation Loop}
+        \label{Fig: selfCitation}
+    \end{subfigure}
+    \caption{Graph Representations and Self-Citation Patterns}
+    \label{fig2xD}
+\end{figure}
+
+\subsection{Web-Scraping for Full-Text Access}
+To enable detailed analysis beyond abstracts, a web scraping module retrieves full-text academic documents, enhancing understanding of citation contexts. Analyzing complete texts helps identify legitimate versus manipulative self-citations, providing broader coverage and context for accurate citation evaluation.
+\subsection{Summarization Pipeline for Contextual Understanding}
+As shown in Fig. 4, citation contexts are analyzed using a two-stage summarization approach with Google's Gemini model \cite{ref_article18}. Initially, Gemini generates detailed page-level summaries to preserve key information. Subsequently, it creates cohesive high-level summaries from these page-level outputs. This method captures essential details and broader narratives effectively, facilitating robust citation analysis.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Summary-Better.png}
+    \caption{Two-stage hierarchical summarization pipeline using Gemini for citation context analysis} 
+    \label{fig2222}
+\end{figure}  
+\subsection{Extraction of Citation Context}
+Citation contexts are extracted using regular expression patterns designed to robustly handle various numbered citation formats commonly found in academic texts. Once a citation is identified, the extraction captures a "context window," typically including four lines of text before and after the citation. Fig. 5 illustrates one specific example of this approach. It serves as a representative case, demonstrating how contextual information surrounding a citation is obtained, but does not cover all possible citation styles or extraction scenarios.
+When a reference number is present, the model—guided by these regular expressions—can detect multiple citation patterns.
+\begin{itemize}
+    \item \textbf{Standard single citations:} For example, a citation like [15].
+    \item \textbf{Multiple citations in one bracket:} Such as [1, 3, 5].
+    \item \textbf{Citation ranges within a single bracket:} For instance, [2-4] or mixed formats like [1,2-4,6] are expanded into their individual numeric references.
+    \item \textbf{Citation ranges split across separate bracketed entries:} For example, [15]--[24] is handled so that every reference in the range is correctly identified.
+\end{itemize}
+
+This systematic approach ensures that the model accurately extracts the surrounding context for each reference number provided.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{context.png}
+    \caption{Context window capturing surrounding text for nuanced citation analysis} 
+    \label{fig2}
+\end{figure}  
+
+\subsection{Integrated Framework for Citation Classification: Dataset Curation, Rule Definition, and LLM-driven Evaluation}
+The development of citation classification rules follows a rigorous, iterative process that combines manual expertise with advanced machine learning techniques.
+
+   The 49 cases used to classify citation necessity include both essential and non-essential self-citation examples. Essential cases feature self-citations from reputed university professors, where the citations appear relevant and occur at modest frequencies. Non-essential cases are drawn from authors identified as extreme self-citers in the Nature article \cite{ref_article19}, “Hundreds of extreme self-citing scientists revealed in new database,” where many self-citations seem unnecessary for understanding the paper's content.
+To further explore potential anomalies, we examine papers from the DBLP dataset with high Total Self-citation Ratio (TSR), calculated as:
+\[
+TSR = \frac{TotalNumberOfSelfCitations}{TotalNumberOfCitations}
+\]
+By reviewing citation contexts and paper summaries, we observed that papers with high TSR often included unnecessary self-citations, whereas those with low TSR tended to have self-citations that were contextually necessary. Hence, our labeled dataset includes essential citations from both reputed professors and low-TSR DBLP papers, and non-essential citations primarily from extreme self-citing authors and high-TSR DBLP entries.
+
+Human experts first defined the initial classification rules, based on how a cited paper contributes to the citing paper; these rules were then grammatically refined by an LLM.After implementing these initial rules,through Gemini \cite{ref_article18}, OpenAI’s GPT-4o \cite{ref_article20} and and GPT-o1-mini \cite{ref_article21}, modifications were needed as they caused the LLMs to misclassify citations. This issue is particularly problematic as the results are not only inconsistent but also accompanied by incorrect justifications.
+Analysis of misinterpretations of the rules is done by using self-contrast approach \cite{ref_article22}.
+One reason for the inconsistency is that the model sometimes determines essentiality solely based on the reference summary, which is not appropriate for assessing whether a citation is actually needed to understand the source paper’s work. Instead, essentiality should be determined by analyzing the source paper's context, while the reference summary should only be used for verification.
+
+\begin{itemize}
+    \item one for determining whether a citation is essential or non-essential based on the source paper's summary and citation context.
+    \item and another for alignment verification, which checks whether the reference paper actually discusses what the citation context claims.
+\end{itemize}
+This separation helps make the classification process clearer and more structured.
+ 
+\begin{table}[H]
+\centering
+\caption{Final Refined Citation Analysis Rules}
+\label{tab:final_rules}
+\renewcommand{\arraystretch}{1.1} % Adjust row height
+\small % Reduce font size
+
+\begin{tabular}{|p{1\textwidth}|}  % Reduce width slightly
+\hline
+\textbf{Final Refined Rules} \\ \hline
+
+\textbf{1. Precise Citation Extraction:} Identify the exact sentence(s) containing the reference [X], including relevant table content. Combine multiple sentences if needed. \\ \hline
+
+\textbf{2. Essential Citation Criteria:} A citation is \textbf{essential} if it meets any of the following criteria: \\ \hline
+
+\textbf{a) Foundation and Definitions:} Establishes fundamental concepts, definitions, or theoretical foundations. Introduces a concept that the paper builds upon. \\ \hline
+
+\textbf{b) Preprocessing/Data Preparation:} Describes data preparation or preprocessing steps. \\ \hline
+
+\textbf{c) Method Information:} Provides methodological background or methods used in the paper. \\ \hline
+
+\textbf{d) Concepts/Techniques:} Explains concepts or techniques implemented in the paper. \\ \hline
+
+\textbf{e) Mathematical or Technical Elements:} Provides mathematical definitions, theorems, or implementation aspects. \\ \hline
+
+\textbf{f) Addresses Paper's Challenges:} The citation addresses the problems the paper aims to solve. \\ \hline
+
+\textbf{g) Comparison/Benchmark:} The citation explicitly states a comparison or serves as a benchmark. \\ \hline
+
+\textbf{h) Technical Limitations:} Highlights technical limitations that influenced the paper’s approach. \\ \hline
+
+\textbf{3. Non-Essential Citation Criteria:} If none of the essential criteria are met, the citation is classified as \textbf{non-essential}: \\ \hline
+
+\textbf{a) Supplementary Information:} Provides only additional context without influencing core findings. \\ \hline
+
+\textbf{b) General Background:} Mentions general knowledge without direct relevance. \\ \hline
+
+\textbf{c) Parallel Work:} References similar work without directly impacting the paper. \\ \hline
+
+\textbf{4. Alignment Verification:}  \\
+a) Check if the citation context aligns with the reference summary.  
+b) If it serves a performance comparison, verify conceptual alignment rather than exact wording. \\ \hline
+
+\textbf{Output Format:}  \\
+1. Citation Context Focus: [Extracted citation content] \\ 
+2. Classification: [Essential/Non-Essential]  \\
+3. Justification: [Explanation based on specific criteria] \\  
+4. Contribution Mentioned: [Yes/No]  \\
+5. Supporting Quote: [Reference summary support] \\ \hline
+
+\end{tabular}
+\end{table}
+Another issue identified is that the citation context itself is not being extracted accurately by the model. This leads to misclassification because the model does not fully understand the portion of the text being cited. To address this, explicit rules are defined to help the model extract the citation focus properly before classifying it.
+
+To alleviate these problems, two separate functions are introduced:
+Table 1 presents the final set of self-citation analysis rules and the selection of OpenAI’s GPT-o1-mini as the primary classification engine—both chosen based on the lowest prompt loss and highest accuracy, precision, recall, and F1 score, as discussed in the results section.
+
+As part of the citation classification pipeline, each instance—comprising the citation context, summaries of both the citing and cited papers, and the finalized rule set—is fed into GPT-o1-mini. The model leverages this combined input to determine whether the citation is essential or non-essential, ensuring decisions are both context-aware and rule-guided.
+
+\section{Results and Discussions}
+ The experimental results demonstrate the effectiveness of the citation classification approach. Fig. 6a illustrates the impact of iterative prompt refinements on each model. 
+  The prompt loss reported in Fig. 6a is determined by counting the number of incorrectly labeled cases out of 49 labeled samples. 
+    \begin{figure}[H]
+    \centering
+    %--- Two images side by side
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{line2.png}
+        \caption{Prompt Evolution Graph illustrating the progression of prompt effectiveness over successive iterations}
+        \label{fig:line2}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{performance.PNG}
+        \caption{Accuracy Comparison showcasing the performance differences among various Large Language Models}
+        \label{fig:performance}
+    \end{subfigure}
+
+    \caption{Comparison of prompt evolution over iterations and accuracy performance across different Large Language Models}
+    \label{fig:comparison}
+\end{figure}
+Among the models, o1-Mini exhibits the most pronounced improvement, showing a consistent decrease in prompt tuning loss across successive iterations. GPT-4o also adapts well, albeit with a slightly slower rate of improvement, while Gemini experiences significant fluctuations.  These fluctuations in Gemini’s loss trajectory likely stem from its difficulty in retaining large-context information, which can lead to hallucinations during extended refinements. 
+
+
+Classification performance was evaluated using the best prompt from o1-Mini using a confusion matrix to compute accuracy, F1-score, and recall. The results indicate that o1-Mini achieves the highest accuracy at 91.84\%, outperforming GPT-4o (81.63\%) and Gemini (75.51\%). As shown in Table 2, we compare our results with the GLAD \cite{ref_article12} and ACTION \cite{ref_article13} frameworks, which, like our approach, focus on anomalous paper-level self-citations. In contrast to works addressing journal-level coercive self-citation, our method targets anomalies at the individual paper level, making these frameworks suitable for comparison.
+
+\begin{table*}[!hbt]
+\caption{Model Performance Comparison}
+\label{tab:model_performance}
+\begin{tabular}{|p{3cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|}
+\hline
+\textbf{Model} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Accuracy} \\ \hline
+\textbf{Gemini} & 0.40 & 0.63 & 0.49 & 0.7551 \\ \hline
+\textbf{GPT-4o} & 0.80 & 0.80 & 0.80 & 0.8163 \\ \hline
+\textbf{o1-Mini} & 0.94 & \textbf{0.92} & \textbf{0.93} & \textbf{0.9184} \\ \hline
+\textbf{ACTION \cite{ref_article13}} & 0.762 & 0.667 & 0.711 & 0.729 \\ \hline
+\textbf{GLAD \cite{ref_article12}} & \textbf{0.9683} & 0.854 & 0.9075 & 0.913 \\ \hline
+\end{tabular}
+\end{table*}
+The classification report further supports these findings: o1-Mini consistently maintains high recall and precision across both essential and nonessential categories, resulting in a robust weighted average F1-score of 0.93. Fig. 6b underscores o1-Mini’s superior classification capability, highlighting its suitability for handling the dataset’s complexity
+
+To further explain the models’ effectiveness, Table 3 presents sample outputs demonstrating how the system distinguishes between essential and non-essential citations. For instance, Example 1 is classified as essential because the citation supports a fundamental preprocessing step in map matching, making it a crucial reference. In contrast, Example 2 is non-essential since it provides background on AI in music without directly contributing to the primary research focus. Similarly, Example 3 is categorized as non-essential, as it offers broad context on chaos theory applications without reinforcing the core contributions. However, Example 4 is essential because it benchmarks the proposed model against existing route prediction techniques, validating its performance. Example 5, despite discussing chaos synchronization methods, is non-essential as it only contributes to a general literature review. Lastly, Example 6 is essential since it underpins the proposed approach, forming the foundation for prosody generation and computational efficiency improvements.
+
+\begin{table*}[!hbt]
+\caption{Analysis of Citation Examples using o1-Mini}
+\label{tab:citation_analysis}
+\begin{tabular}{|p{2cm}|p{3.5cm}|p{3.5cm}|p{3.5cm}|}
+\hline
+\textbf{Citation Context} & \textbf{Role of Citation} & \textbf{Rule Applied} & \textbf{Final Classification} \\ \hline
+
+\textbf{Example 1} & 
+Discusses how map matching consolidates multiple GPS data points onto the same road network edge, reducing space requirements. & 
+Supports a core preprocessing concept crucial for handling large GPS trajectory data efficiently. & 
+Essential: The Citation is integral to understanding the preprocessing step in map matching. \\ \hline
+
+\textbf{Example 2} & 
+Mentions AI applications in music, including genre classification, recommendation systems, and automated music generation. & 
+Provides general background on AI in music but does not directly impact the main research on violin bowing techniques. & 
+Non-Essential: The Citation serves as supplementary information rather than a critical reference. \\ \hline
+
+\textbf{Example 3} & 
+Lists applications of chaos theory, including chemical reactions. & 
+Offers broad context for chaos theory applications but does not directly support the paper’s main contributions. & 
+Non-Essential: The Citations provide general background without influencing the paper’s primary analysis. \\ \hline
+
+\textbf{Example 4} & 
+Compares route prediction methods in Table 8, referencing the "Closest Match Algorithm" from Tiwari et al. (2012). & 
+Used for benchmarking against the proposed CTW model’s performance and scalability. & 
+Essential: The Citation validates the new model by comparing it with existing route prediction techniques. \\ \hline
+
+\textbf{Example 5} & 
+Enumerates various methods for chaos synchronization, including active control, adaptive control, and sliding mode control. & 
+Provides a general literature review on existing control techniques without directly impacting the proposed strategy. & 
+Non-Essential: The Citation is part of a broader enumeration and does not form the foundation of the proposed control approach. \\ \hline
+
+\textbf{Example 6} &    
+References the 'phone-level' unit-selection method from, which serves as the basis for the current 'segmental' unit-selection framework. & 
+Forms the foundation of the proposed approach, directly influencing prosody generation and computational efficiency improvements. & 
+Essential: The Citation is critical as it underpins the proposed approach. \\ \hline
+
+\end{tabular}
+\end{table*}
+
+Overall, the analysis reveals that o1-Mini not only adapts best to prompt refinements but also delivers higher classification accuracy.  This highlights the importance of prompt optimization in model selection.  
+
+
+
+\subsection{Broader Implications and Findings}
+This work highlights important issues in academic research. Self-citation loops can distort metrics like the h-index, making research impact seem higher than it is. Relying too much on citation counts encourages self-citation, especially in competitive fields where careers and funding depend on these numbers. Collaboration also makes it harder to spot unusual self-citation patterns since co-authors often cite each other’s work. This work's tools, like classification models and summarization pipelines, can help journals, universities, and funding agencies create fairer evaluation systems by focusing on citation quality and honesty.
+
+\section{Conclusion and Future Work}
+This work proposes a method for detecting anomalous self-citations in academic papers by combining graph representation learning, NLP, and machine learning. It builds citation networks using graph-theoretic techniques, detects self-citation loops via random walks, summarizes citation contexts with a two-stage pipeline, and classifies citations as essential or non-essential with high precision. This approach improves research integrity and offers a scalable solution for identifying manipulative citation practices. Future directions include temporal citation filtering to reflect evolving trends, improved citation format recognition using regex and adaptive parsing, and broader validation across disciplines. Additional goals involve identifying the most contributive paper when multiple citations refer to the same work, enhancing interpretability with anomaly visualizations, and integrating with scholarly metrics for deeper impact analysis.
+%
+\begin{thebibliography}{8}
+
+\bibitem{ref_article1}
+Hirsch, J. E. (2005). "An index to quantify an individual's scientific research output." 
+\textit{Proceedings of the National Academy of Sciences}, 102(46), 16569-16572.
+
+\bibitem{ref_article2}
+Hyland, K. (2003). "Self‐citation and self‐reference: Credibility and promotion in academic"
+\textit{Journal of the American Society for Information Science and Technology}, 54(3), 251-259.
+
+
+\bibitem{ref_article3}
+C. Bartneck and S. Kokkelmans, ”Detecting h-index manipulation through self-citation analysis,” 
+\textit{Scientometrics}, vol. 87, no. 1, pp. 85–98, 2011.
+
+\bibitem{ref_article4}
+L. Fiorillo, "Detecting the impact of academics self-citations: Fi-score," 
+\textit{Publishing Research Quarterly}, vol. 40, no. 1, pp. 70–79, 2024.
+
+\bibitem{ref_article5}
+X. Bai, F. Xia, I. Lee, J. Zhang, and Z. Ning, ”Identifying anomalous citations for objective evaluation of scholarly article impact,” 
+\textit{PloS One}, vol. 11, no. 9, p. e0162364, 2016.
+
+\bibitem{ref_article6}
+G. Abramo, C. A. D’Angelo, and L. Grilli, ”The effects of citation-based research evaluation schemes on self-citation behavior,” 
+\textit{Journal of Informetrics}, vol. 15, no. 4, p. 101204, 2021.
+
+
+
+\bibitem{ref_article7}
+T. Yu, G. Yu, Y. Song, and M. Y. Wang, ”Toward the more effective identification of journals with anomalous self-citation,” 
+\textit{Malaysian Journal of Library and Information Science}, vol. 23, no. 2, pp. 25–46, 2018.
+
+\bibitem{ref_article8}
+S. Kojaku, G. Livan, and N. Masuda, ”Detecting anomalous citation groups in journal networks,” 
+\textit{Scientific Reports}, vol. 11, no. 1, p. 14524, 2021.
+
+
+\bibitem{ref_article9}
+B. L. K. Jolly, L. Jain, D. Bera, and T. Chakraborty, "Unsupervised anomaly detection in journal-level citation networks," 
+\textit{Proceedings of the ACM/IEEE Joint Conference on Digital Libraries}, vol. 2020, pp. 27–36, Aug. 2020.
+
+
+\bibitem{ref_article10}
+J. D. Wren and C. Georgescu, ”Detecting anomalous referencing patterns in PubMed papers suggestive of author-centric reference list manipulation,” 
+\textit{Scientometrics}, vol. 127, no. 10, pp. 5753–5771, 2022.
+
+\bibitem{ref_article11}
+R. Avros, M. B. Haim, A. Madar, E. Ravve, and Z. Volkovich, ”Spotting Suspicious Academic Citations Using Self-Learning Graph Transformers,” 
+\textit{Mathematics}, vol. 12, no. 6, p. 814, 2024.
+
+\bibitem{ref_article12}
+J. Liu, F. Xia, X. Feng, J. Ren, and H. Liu, ”Deep graph learning for anomalous citation detection,” 
+\textit{IEEE Transactions on Neural Networks and Learning Systems}, vol. 33, no. 6, pp. 2543–2557, 2022.
+
+\bibitem{ref_article13}
+J. Liu, X. Bai, M. Wang, S. Tuarob, and F. Xia, ”Anomalous citations detection in academic networks,” 
+\textit{Artificial Intelligence Review}, vol. 57, no. 4, p. 103, 2024.
+
+
+\bibitem{ref_article14}
+A. Lagopoulos and G. Tsoumakas, ”Self-citation Analysis using Sentence Embeddings,” 
+\textit{arXiv preprint arXiv:2105.05527}, 2021.
+
+
+
+\bibitem{ref_article15}
+K. Nishikawa and H. Koshiba, ”Exploring the applicability of large language models to citation context analysis,” 
+\textit{Scientometrics}, vol. 129, no. 11, pp. 6751–6777, 2024.
+
+\bibitem{ref_article16}
+X. Xie and Y. Chen, ``U.S. Patent No. 12,169,516,'' Washington, DC: U.S. Patent and Trademark Office, 2024.
+
+
+\bibitem{ref_article17} J. Tang, J. Zhang, L. Yao, J. Li, L. Zhang, and Z. Su, “ArnetMiner: extraction and mining of academic social networks,” in \textit{Proc. 14th ACM SIGKDD Int. Conf. Knowl. Discovery Data Mining}, Aug. 2008, pp. 990–998.
+
+\bibitem{ref_article18}
+Google. (n.d.). Gemini [Large language model]. https://example.com/gemini
+
+
+\bibitem{ref_article19}
+R. Van Noorden and D. Singh Chawla, "Hundreds of extreme self-citing scientists revealed in new database," \textit{Nature}, vol. 572, no. 7771, pp. 578–579, Aug. 2019, doi: 10.1038/d41586-019-02479-7.
+
+\bibitem{ref_article20} A. Hurst, A. Lerer, A. P. Goucher, A. Perelman, A. Ramesh, A. Clark, ... and I. Kivlichan, “GPT-4o System Card,” in \textit{arXiv preprint arXiv:2410.21276}, May 2024.
+
+\bibitem{ref_article21} A. Jaech, A. Kalai, A. Lerer, A. Richardson, A. El-Kishky, A. Low, ... and L. Kaiser, “OpenAI o1 System Card,” in \textit{arXiv preprint arXiv:2412.16720}, Dec. 2024.
+
+\bibitem{ref_article22}
+S. Self-Reflection, ”Self-Contrast: Better Reflection Through Inconsistent Solving Perspectives.”
+
+\end{thebibliography}
+\end{document}
