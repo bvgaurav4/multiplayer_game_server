@@ -187,6 +187,9 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 		var playerMeessage PlayerMessage
 		err := conn.ReadJSON(playerMeessage)
 		fmt.Printf("Received: %s\n", playerMeessage)
+		if err == nil {
+			break
+		}
 		info := make(map[string]string)
 		info["player_id"] = playerID
 		info["color"] = color
