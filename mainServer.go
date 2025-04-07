@@ -148,10 +148,8 @@ func adding(player *Player) string {
 
 func poolBroadCast(id string, positionlist map[string]Position, msg any) {
 	pool := pools[id]
-	fmt.Println("my pool is  %+v\n", pool)
 	if pool != nil {
 		welcome := ServerMessage{Src: "server", PositionList: positionlist, MainMessage: msg}
-		fmt.Println(welcome)
 		for _, player := range pool.Blue {
 			if player != nil && player.Conn != nil {
 				player.Mutex.Lock()
@@ -169,7 +167,6 @@ func poolBroadCast(id string, positionlist map[string]Position, msg any) {
 				player.Mutex.Lock()
 				err := player.Conn.WriteJSON(welcome)
 				player.Mutex.Unlock()
-
 				if err != nil {
 					fmt.Println("Error writing JSON to Yellow player:", err)
 				}
@@ -210,11 +207,7 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		var playerMeessage PlayerMessage
-		// err := conn.ReadJSON(&playerMeessage)
 		_, msg, err := conn.ReadMessage()
-
-		fmt.Printf("Received: %s\n", msg)
-		// fmt.Printf("Received: %+v\n", msg) // use %+v to print struct with field names
 
 		if err != nil {
 			count -= 1
@@ -242,9 +235,12 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 		}
 
 		err = json.Unmarshal(msg, &playerMeessage)
-		fmt.Printf("Received: %+v\n", playerMeessage)
-		pools[player.PoolId].playerPositions[playerID] = playerMeessage.Position
-		poolBroadCast(player.PoolId, pools[playerMeessage.PoolId].playerPositions, "")
+
+		if err == nil {
+			fmt.Printf("Received: %+v\n", playerMeessage)
+			pools[player.PoolId].playerPositions[playerID] = playerMeessage.Position
+			poolBroadCast(player.PoolId, pools[playerMeessage.PoolId].playerPositions, "")
+		}
 	}
 }
 
