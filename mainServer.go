@@ -12,9 +12,14 @@ import (
 )
 
 type Position struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
-	Z float64 `json:"z"`
+	X     float64 `json:"x"`
+	Y     float64 `json:"y"`
+	Z     float64 `json:"z"`
+	RX    float64 `json:"rx"`
+	RY    float64 `json:"ry"`
+	RZ    float64 `json:"rz"`
+	State bool    `json:"state"`
+	Color string  `json:"color"`
 }
 
 type PlayerMessage struct {
@@ -22,7 +27,6 @@ type PlayerMessage struct {
 	PoolId   string   `json:"pool_id"`
 	Status   string   `json:"status"`
 	Position Position `json:"position"`
-	Tile     float64  `json:"tilt"`
 }
 
 type ServerMessage struct {
@@ -32,12 +36,12 @@ type ServerMessage struct {
 }
 
 type Player struct {
-	Id     string
-	PoolId string
-	color  string
-	status string
+	Id     string `json:"id"`
+	PoolId string `json:"pool_id"`
+	Color  string `json:"color"`
+	Status string `json:"status"`
 	Mutex  sync.Mutex
-	Conn   *websocket.Conn
+	Conn   *websocket.Conn `json:"conn"`
 }
 
 type Pool struct {
@@ -54,6 +58,7 @@ var (
 	pools  = make(map[string]*Pool)
 	count  int16
 	lol    string
+	poolMu sync.Mutex
 )
 
 var upgrader = websocket.Upgrader{
@@ -98,10 +103,12 @@ func adding(player *Player) string {
 	if len(poolsarray[key].Blue) > len(poolsarray[key].Yellow) {
 		poolsarray[key].count += 1
 		poolsarray[key].Yellow = append(poolsarray[key].Yellow, player)
+		player.PoolId = poolsarray[key].Id
 		return "yellow"
 	} else {
 		poolsarray[key].count += 1
 		poolsarray[key].Blue = append(poolsarray[key].Blue, player)
+		player.PoolId = poolsarray[key].Id
 		return "blue"
 	}
 }
@@ -147,14 +154,17 @@ func adding(player *Player) string {
 // }
 
 func poolBroadCast(id string, positionlist map[string]Position, msg any) {
-	pool := pools[id]
+	poolMu.Lock()
+	pool, ok := pools[id]
+	if !ok {
+		poolMu.Unlock()
+		return
+	}
 	if pool != nil {
 		welcome := ServerMessage{Src: "server", PositionList: positionlist, MainMessage: msg}
 		for _, player := range pool.Blue {
 			if player != nil && player.Conn != nil {
-				player.Mutex.Lock()
 				err := player.Conn.WriteJSON(welcome)
-				player.Mutex.Unlock()
 
 				if err != nil {
 					fmt.Println("Error writing JSON to Blue player:", err)
@@ -164,19 +174,18 @@ func poolBroadCast(id string, positionlist map[string]Position, msg any) {
 
 		for _, player := range pool.Yellow {
 			if player != nil && player.Conn != nil {
-				player.Mutex.Lock()
 				err := player.Conn.WriteJSON(welcome)
-				player.Mutex.Unlock()
 				if err != nil {
 					fmt.Println("Error writing JSON to Yellow player:", err)
 				}
 			}
 		}
 	}
+	poolMu.Unlock()
 }
 
 func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
-	if count >= 3 {
+	if count >= 2 {
 		return
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -188,7 +197,7 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 	playerID := uuid.New().String()
 	player := Player{
 		Id:     playerID,
-		status: "waiting",
+		Status: "waiting",
 		Conn:   conn,
 	}
 	color := adding(&player)
@@ -200,46 +209,51 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 	welcome := ServerMessage{Src: "server", PositionList: nil, MainMessage: info}
 	count += 1
 	err = conn.WriteJSON(welcome)
-	for player.status == "waiting" {
+	for player.Status == "waiting" {
 	}
 
+	time.Sleep(5 * time.Second)
 	fmt.Println("yup here")
 
 	for {
 		var playerMeessage PlayerMessage
 		_, msg, err := conn.ReadMessage()
 
-		if err != nil {
-			count -= 1
-			pools[player.PoolId].count -= 1
-			if player.color == "blue" {
-				i := 0
-				for i = 0; i < len(pools[player.PoolId].Blue); i++ {
-					if &pools[player.PoolId].Blue[i].Id == &player.Id {
-						break
-					}
-				}
-				pools[player.PoolId].Blue = append(pools[player.PoolId].Blue[:i], pools[player.PoolId].Blue[i:]...)
-				return
-			}
-			if player.color == "yellow" {
-				i := 0
-				for i = 0; i < len(pools[player.PoolId].Yellow); i++ {
-					if &pools[player.PoolId].Yellow[i].Id == &player.Id {
-						break
-					}
-				}
-				pools[player.PoolId].Yellow = append(pools[player.PoolId].Yellow[:i], pools[player.PoolId].Yellow[i:]...)
-				return
-			}
-		}
+		// if err != nil {
+		// 	count -= 1
+		// 	pools[player.PoolId].count -= 1
+		// 	if player.Color == "blue" {
+		// 		i := 0
+		// 		for i = 0; i < len(pools[player.PoolId].Blue); i++ {
+		// 			if &pools[player.PoolId].Blue[i].Id == &player.Id {
+		// 				break
+		// 			}
+		// 		}
+		// 		pools[player.PoolId].Blue = append(pools[player.PoolId].Blue[:i], pools[player.PoolId].Blue[i:]...)
+		// 		return
+		// 	}
+		// 	if player.Color == "yellow" {
+		// 		i := 0
+		// 		for i = 0; i < len(pools[player.PoolId].Yellow); i++ {
+		// 			if &pools[player.PoolId].Yellow[i].Id == &player.Id {
+		// 				break
+		// 			}
+		// 		}
+		// 		pools[player.PoolId].Yellow = append(pools[player.PoolId].Yellow[:i], pools[player.PoolId].Yellow[i:]...)
+		// 		return
+		// 	}
+		// }
 
 		err = json.Unmarshal(msg, &playerMeessage)
 
 		if err == nil {
 			fmt.Printf("Received: %+v\n", playerMeessage)
+			poolMu.Lock()
 			pools[player.PoolId].playerPositions[playerID] = playerMeessage.Position
+			poolMu.Unlock()
 			poolBroadCast(player.PoolId, pools[playerMeessage.PoolId].playerPositions, "")
+		} else {
+			fmt.Println("somthing is wrong")
 		}
 	}
 }
@@ -247,31 +261,31 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 func changeStatus(k string, count int64, status string) {
 	pool := pools[k]
 	for i := 0; i < len(pool.Blue); i++ {
-		pool.Blue[i].status = status
+		pool.Blue[i].Status = status
 	}
 	for i := 0; i < len(pool.Yellow); i++ {
-		pool.Yellow[i].status = status
+		pool.Yellow[i].Status = status
 	}
 }
 
 func startGame() {
 	for {
 		for keys := range pools {
-			if pools[keys].count == 1 && pools[keys].status != "playing" {
+			if pools[keys].count == 2 && pools[keys].status != "playing" {
 				pools[keys].status = "playing"
 				fmt.Println("Starting Game ")
 				info := make(map[string]string)
 				info["status"] = "playing"
 				for i := range pools[keys].Blue {
-					pools[keys].Blue[i].status = "playing"
+					pools[keys].Blue[i].Status = "playing"
 				}
 				for i := range pools[keys].Yellow {
-					pools[keys].Yellow[i].status = "playing"
+					pools[keys].Yellow[i].Status = "playing"
 				}
 				poolBroadCast(keys, nil, info)
 			}
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(10000 * time.Millisecond)
 	}
 }
 
