@@ -20,6 +20,7 @@ type Position struct {
 	RZ    float64 `json:"rz"`
 	State bool    `json:"state"`
 	Color string  `json:"color"`
+	alive bool    `json:"alive"`
 }
 
 type PlayerMessage struct {
@@ -36,12 +37,13 @@ type ServerMessage struct {
 }
 
 type Player struct {
-	Id     string `json:"id"`
-	PoolId string `json:"pool_id"`
-	Color  string `json:"color"`
-	Status string `json:"status"`
-	Mutex  sync.Mutex
-	Conn   *websocket.Conn `json:"conn"`
+	Id       string `json:"id"`
+	PoolId   string `json:"pool_id"`
+	Color    string `json:"color"`
+	Status   string `json:"status"`
+	Mutex    sync.Mutex
+	position Position        `json:"position"`
+	Conn     *websocket.Conn `json:"conn"`
 }
 
 type Pool struct {
@@ -54,11 +56,13 @@ type Pool struct {
 }
 
 var (
-	client []*websocket.Conn
-	pools  = make(map[string]*Pool)
-	count  int16
-	lol    string
-	poolMu sync.Mutex
+	client              []*websocket.Conn
+	pools               = make(map[string]*Pool)
+	count               int16
+	lol                 string
+	poolMu              sync.Mutex
+	preSetLoctionBlue   [5]Position
+	preSetLoctionyellow [5]Position
 )
 
 var upgrader = websocket.Upgrader{
@@ -268,6 +272,19 @@ func changeStatus(k string, count int64, status string) {
 	}
 }
 
+func settingPree() {
+	preSetLoctionBlue[0] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+	preSetLoctionBlue[1] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+	preSetLoctionBlue[2] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+	preSetLoctionBlue[3] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+	preSetLoctionBlue[4] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+	preSetLoctionyellow[0] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+	preSetLoctionyellow[1] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+	preSetLoctionyellow[2] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+	preSetLoctionyellow[3] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+	preSetLoctionyellow[4] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+}
+
 func startGame() {
 	for {
 		for keys := range pools {
@@ -278,9 +295,11 @@ func startGame() {
 				info["status"] = "playing"
 				for i := range pools[keys].Blue {
 					pools[keys].Blue[i].Status = "playing"
+					pools[keys].Blue[i].position = preSetLoctionBlue[i]
 				}
 				for i := range pools[keys].Yellow {
 					pools[keys].Yellow[i].Status = "playing"
+					pools[keys].Yellow[i].position = preSetLoctionyellow[i]
 				}
 				poolBroadCast(keys, nil, info)
 			}
@@ -290,6 +309,7 @@ func startGame() {
 }
 
 func main() {
+	settingPree()
 	go startGame()
 	http.HandleFunc("/play", gameLogicAndMechanics)
 	port := "8080"
