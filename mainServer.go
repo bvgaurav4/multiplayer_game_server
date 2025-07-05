@@ -216,9 +216,24 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 	for player.Status == "waiting" {
 	}
 
-	time.Sleep(5 * time.Second)
-	fmt.Println("yup here")
+	countDuration := 5
 
+	if player.Status == "Starting" {
+		for i := 0; i <= countDuration; i++ {
+			mgs := make(map[string]any)
+			mgs["status"] = "Starting"
+			mgs[""] = countDuration - i
+			countDown := ServerMessage{Src: "server", PositionList: nil, MainMessage: mgs}
+			err := conn.WriteJSON(countDown)
+
+			if err != nil {
+				//pop
+				changeStatus(player.PoolId, 0, "waiting")
+			}
+		}
+	}
+
+	changeStatus(player.PoolId, 0, "Playing")
 	for {
 		var playerMeessage PlayerMessage
 		_, msg, err := conn.ReadMessage()
@@ -257,13 +272,13 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 			poolMu.Unlock()
 			poolBroadCast(player.PoolId, pools[playerMeessage.PoolId].playerPositions, "")
 		} else {
-			fmt.Println("somthing is wrong")
+			fmt.Println("somthing is wrong", err)
 		}
 	}
 }
 
-func changeStatus(k string, count int64, status string) {
-	pool := pools[k]
+func changeStatus(poolId string, count int64, status string) {
+	pool := pools[poolId]
 	for i := 0; i < len(pool.Blue); i++ {
 		pool.Blue[i].Status = status
 	}
@@ -273,11 +288,13 @@ func changeStatus(k string, count int64, status string) {
 }
 
 func settingPree() {
+
 	preSetLoctionBlue[0] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
 	preSetLoctionBlue[1] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
 	preSetLoctionBlue[2] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
 	preSetLoctionBlue[3] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
 	preSetLoctionBlue[4] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
+
 	preSetLoctionyellow[0] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
 	preSetLoctionyellow[1] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
 	preSetLoctionyellow[2] = Position{X: 0, Y: 0, Z: 0, RX: 0, RY: 0, RZ: 0}
