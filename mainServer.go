@@ -158,13 +158,21 @@ func adding(player *Player) string {
 // }
 
 func poolBroadCast(id string, positionlist map[string]Position, msg any) {
+	fmt.Println("in broadcast")
+	fmt.Println("pools")
+	fmt.Println(pools)
+
 	pool, ok := pools[id]
 	if ok {
+		fmt.Println("pool")
 		fmt.Println(pool)
 		if pool != nil {
 			welcome := ServerMessage{Src: "server", PositionList: positionlist, MainMessage: msg}
+			fmt.Println("blue")
+
 			for _, player := range pool.Blue {
 				if player != nil && player.Conn != nil {
+					fmt.Println(player.Mutex)
 					player.Mutex.Lock()
 					err := player.Conn.WriteJSON(welcome)
 					player.Mutex.Unlock()
@@ -173,6 +181,7 @@ func poolBroadCast(id string, positionlist map[string]Position, msg any) {
 					}
 				}
 			}
+			fmt.Println("yellow")
 
 			for _, player := range pool.Yellow {
 				if player != nil && player.Conn != nil {
@@ -288,7 +297,10 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 				poolMu.Lock()
 				pools[player.PoolId].playerPositions[playerID] = playerMeessage.Position
 				poolMu.Unlock()
-				poolBroadCast(player.PoolId, pools[playerMeessage.PoolId].playerPositions, "")
+				fmt.Println(player)
+				fmt.Println(pools[player.PoolId].playerPositions)
+				fmt.Println("pools", pools)
+				poolBroadCast(player.PoolId, pools[player.PoolId].playerPositions, "")
 			} else {
 				fmt.Println("somthing is wrong", err)
 			}
