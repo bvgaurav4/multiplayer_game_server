@@ -235,6 +235,7 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 				player.Mutex.Lock()
 				err = conn.WriteJSON(countDown)
 				player.Mutex.Unlock()
+				time.Sleep(1 * time.Second)
 
 				if err != nil {
 					//pop
