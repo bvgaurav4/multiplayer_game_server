@@ -158,34 +158,34 @@ func adding(player *Player) string {
 // }
 
 func poolBroadCast(id string, positionlist map[string]Position, msg any) {
-	poolMu.Lock()
 	pool, ok := pools[id]
-	if !ok {
-		poolMu.Unlock()
-		return
-	}
-	if pool != nil {
-		welcome := ServerMessage{Src: "server", PositionList: positionlist, MainMessage: msg}
-		for _, player := range pool.Blue {
-			if player != nil && player.Conn != nil {
-				err := player.Conn.WriteJSON(welcome)
+	if ok {
+		fmt.Println(pool)
+		if pool != nil {
+			welcome := ServerMessage{Src: "server", PositionList: positionlist, MainMessage: msg}
+			for _, player := range pool.Blue {
+				if player != nil && player.Conn != nil {
+					player.Mutex.Lock()
+					err := player.Conn.WriteJSON(welcome)
+					player.Mutex.Unlock()
+					if err != nil {
+						fmt.Println("Error writing JSON to Blue player:", err)
+					}
+				}
+			}
 
-				if err != nil {
-					fmt.Println("Error writing JSON to Blue player:", err)
+			for _, player := range pool.Yellow {
+				if player != nil && player.Conn != nil {
+					player.Mutex.Lock()
+					err := player.Conn.WriteJSON(welcome)
+					player.Mutex.Unlock()
+					if err != nil {
+						fmt.Println("Error writing JSON to Yellow player:", err)
+					}
 				}
 			}
 		}
-
-		for _, player := range pool.Yellow {
-			if player != nil && player.Conn != nil {
-				err := player.Conn.WriteJSON(welcome)
-				if err != nil {
-					fmt.Println("Error writing JSON to Yellow player:", err)
-				}
-			}
-		}
 	}
-	poolMu.Unlock()
 }
 
 func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
@@ -212,7 +212,9 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 	info["pool_id"] = player.PoolId
 	welcome := ServerMessage{Src: "server", PositionList: nil, MainMessage: info}
 	count += 1
+	player.Mutex.Lock()
 	err = conn.WriteJSON(welcome)
+	player.Mutex.Unlock()
 	if err != nil {
 		return
 	}
@@ -230,7 +232,9 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 				mgs["status"] = "Starting"
 				mgs[""] = countDuration - i
 				countDown := ServerMessage{Src: "server", PositionList: nil, MainMessage: mgs}
-				err := conn.WriteJSON(countDown)
+				player.Mutex.Lock()
+				err = conn.WriteJSON(countDown)
+				player.Mutex.Unlock()
 
 				if err != nil {
 					//pop
@@ -240,6 +244,13 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 		}
 
 		changeStatus(player.PoolId, "Playing")
+
+		mgs := make(map[string]any)
+		mgs["status"] = "Playing"
+		countDown := ServerMessage{Src: "server", PositionList: nil, MainMessage: mgs}
+		player.Mutex.Lock()
+		err = conn.WriteJSON(countDown)
+		player.Mutex.Unlock()
 		for {
 			var playerMeessage PlayerMessage
 			_, msg, err := conn.ReadMessage()
@@ -313,7 +324,7 @@ func settingPree() {
 func startGame() {
 	for {
 		for keys := range pools {
-			if pools[keys].count == 2 && pools[keys].status != "Starting" {
+			if pools[keys].count == 1 && pools[keys].status != "Starting" {
 				pools[keys].status = "Starting"
 				fmt.Println("Starting Game ")
 				info := make(map[string]string)
