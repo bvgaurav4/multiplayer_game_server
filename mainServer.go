@@ -213,71 +213,79 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 	welcome := ServerMessage{Src: "server", PositionList: nil, MainMessage: info}
 	count += 1
 	err = conn.WriteJSON(welcome)
-	for player.Status == "waiting" {
+	if err != nil {
+		return
 	}
 
-	countDuration := 5
+	for {
+		for player.Status == "waiting" {
 
-	if player.Status == "Starting" {
-		for i := 0; i <= countDuration; i++ {
-			mgs := make(map[string]any)
-			mgs["status"] = "Starting"
-			mgs[""] = countDuration - i
-			countDown := ServerMessage{Src: "server", PositionList: nil, MainMessage: mgs}
-			err := conn.WriteJSON(countDown)
+		}
 
-			if err != nil {
-				//pop
-				changeStatus(player.PoolId, 0, "waiting")
+		countDuration := 5
+
+		if player.Status == "Starting" {
+			for i := 0; i <= countDuration; i++ {
+				mgs := make(map[string]any)
+				mgs["status"] = "Starting"
+				mgs[""] = countDuration - i
+				countDown := ServerMessage{Src: "server", PositionList: nil, MainMessage: mgs}
+				err := conn.WriteJSON(countDown)
+
+				if err != nil {
+					//pop
+					changeStatus(player.PoolId, "waiting")
+				}
+			}
+		}
+
+		changeStatus(player.PoolId, "Playing")
+		for {
+			var playerMeessage PlayerMessage
+			_, msg, err := conn.ReadMessage()
+
+			// if err != nil {
+			// 	count -= 1
+			// 	pools[player.PoolId].count -= 1
+			// 	if player.Color == "blue" {
+			// 		i := 0
+			// 		for i = 0; i < len(pools[player.PoolId].Blue); i++ {
+			// 			if &pools[player.PoolId].Blue[i].Id == &player.Id {
+			// 				break
+			// 			}
+			// 		}
+			// 		pools[player.PoolId].Blue = append(pools[player.PoolId].Blue[:i], pools[player.PoolId].Blue[i:]...)
+			// 		return
+			// 	}
+			// 	if player.Color == "yellow" {
+			// 		i := 0
+			// 		for i = 0; i < len(pools[player.PoolId].Yellow); i++ {
+			// 			if &pools[player.PoolId].Yellow[i].Id == &player.Id {
+			// 				break
+			// 			}
+			// 		}
+			// 		pools[player.PoolId].Yellow = append(pools[player.PoolId].Yellow[:i], pools[player.PoolId].Yellow[i:]...)
+			// 		return
+			// 	}
+			// }
+
+			err = json.Unmarshal(msg, &playerMeessage)
+
+			if err == nil {
+				fmt.Printf("Received: %+v\n", playerMeessage)
+				poolMu.Lock()
+				pools[player.PoolId].playerPositions[playerID] = playerMeessage.Position
+				poolMu.Unlock()
+				poolBroadCast(player.PoolId, pools[playerMeessage.PoolId].playerPositions, "")
+			} else {
+				fmt.Println("somthing is wrong", err)
 			}
 		}
 	}
 
-	changeStatus(player.PoolId, 0, "Playing")
-	for {
-		var playerMeessage PlayerMessage
-		_, msg, err := conn.ReadMessage()
-
-		// if err != nil {
-		// 	count -= 1
-		// 	pools[player.PoolId].count -= 1
-		// 	if player.Color == "blue" {
-		// 		i := 0
-		// 		for i = 0; i < len(pools[player.PoolId].Blue); i++ {
-		// 			if &pools[player.PoolId].Blue[i].Id == &player.Id {
-		// 				break
-		// 			}
-		// 		}
-		// 		pools[player.PoolId].Blue = append(pools[player.PoolId].Blue[:i], pools[player.PoolId].Blue[i:]...)
-		// 		return
-		// 	}
-		// 	if player.Color == "yellow" {
-		// 		i := 0
-		// 		for i = 0; i < len(pools[player.PoolId].Yellow); i++ {
-		// 			if &pools[player.PoolId].Yellow[i].Id == &player.Id {
-		// 				break
-		// 			}
-		// 		}
-		// 		pools[player.PoolId].Yellow = append(pools[player.PoolId].Yellow[:i], pools[player.PoolId].Yellow[i:]...)
-		// 		return
-		// 	}
-		// }
-
-		err = json.Unmarshal(msg, &playerMeessage)
-
-		if err == nil {
-			fmt.Printf("Received: %+v\n", playerMeessage)
-			poolMu.Lock()
-			pools[player.PoolId].playerPositions[playerID] = playerMeessage.Position
-			poolMu.Unlock()
-			poolBroadCast(player.PoolId, pools[playerMeessage.PoolId].playerPositions, "")
-		} else {
-			fmt.Println("somthing is wrong", err)
-		}
-	}
 }
 
-func changeStatus(poolId string, count int64, status string) {
+func changeStatus(poolId string, status string) {
 	pool := pools[poolId]
 	for i := 0; i < len(pool.Blue); i++ {
 		pool.Blue[i].Status = status
@@ -305,17 +313,17 @@ func settingPree() {
 func startGame() {
 	for {
 		for keys := range pools {
-			if pools[keys].count == 2 && pools[keys].status != "playing" {
-				pools[keys].status = "playing"
+			if pools[keys].count == 2 && pools[keys].status != "Starting" {
+				pools[keys].status = "Starting"
 				fmt.Println("Starting Game ")
 				info := make(map[string]string)
-				info["status"] = "playing"
+				info["status"] = "Starting"
 				for i := range pools[keys].Blue {
-					pools[keys].Blue[i].Status = "playing"
+					pools[keys].Blue[i].Status = "Starting"
 					pools[keys].Blue[i].position = preSetLoctionBlue[i]
 				}
 				for i := range pools[keys].Yellow {
-					pools[keys].Yellow[i].Status = "playing"
+					pools[keys].Yellow[i].Status = "Starting"
 					pools[keys].Yellow[i].position = preSetLoctionyellow[i]
 				}
 				poolBroadCast(keys, nil, info)
