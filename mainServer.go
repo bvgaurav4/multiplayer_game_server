@@ -173,9 +173,9 @@ func poolBroadCast(id string, positionlist map[string]Position, msg any) {
 			for _, player := range pool.Blue {
 				if player != nil && player.Conn != nil {
 					fmt.Println(player.Mutex)
-					player.Mutex.Lock()
+					// player.Mutex.Lock()
 					err := player.Conn.WriteJSON(welcome)
-					player.Mutex.Unlock()
+					// player.Mutex.Unlock()
 					if err != nil {
 						fmt.Println("Error writing JSON to Blue player:", err)
 					}
@@ -185,14 +185,16 @@ func poolBroadCast(id string, positionlist map[string]Position, msg any) {
 
 			for _, player := range pool.Yellow {
 				if player != nil && player.Conn != nil {
-					player.Mutex.Lock()
+					// player.Mutex.Lock()
 					err := player.Conn.WriteJSON(welcome)
-					player.Mutex.Unlock()
+					// player.Mutex.Unlock()
 					if err != nil {
 						fmt.Println("Error writing JSON to Yellow player:", err)
 					}
 				}
 			}
+			fmt.Println("done")
+			return
 		}
 	}
 }
@@ -261,7 +263,9 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 		player.Mutex.Lock()
 		err = conn.WriteJSON(countDown)
 		player.Mutex.Unlock()
-		for {
+
+		fmt.Println("here now")
+		for player.Status == "Playing" {
 			var playerMeessage PlayerMessage
 			_, msg, err := conn.ReadMessage()
 
@@ -291,7 +295,7 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 			// }
 
 			err = json.Unmarshal(msg, &playerMeessage)
-
+			fmt.Println("bruh")
 			if err == nil {
 				fmt.Printf("Received: %+v\n", playerMeessage)
 				poolMu.Lock()
@@ -303,6 +307,7 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 				poolBroadCast(player.PoolId, pools[player.PoolId].playerPositions, "")
 			} else {
 				fmt.Println("somthing is wrong", err)
+				break
 			}
 		}
 	}
