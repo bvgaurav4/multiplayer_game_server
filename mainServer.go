@@ -42,8 +42,8 @@ type Player struct {
 	Color    string `json:"color"`
 	Status   string `json:"status"`
 	Mutex    sync.Mutex
-	position Position        `json:"position"`
-	Conn     *websocket.Conn `json:"conn"`
+	position Position `json:"position"`
+	Conn     *websocket.Conn
 }
 
 type Pool struct {
@@ -53,16 +53,19 @@ type Pool struct {
 	count           int16
 	status          string
 	playerPositions map[string]Position
+	ScoreBlue       int16
+	ScoreYellow     int16
+	Result          string
+	Mutex           sync.Mutex
 }
 
 var (
-	client              []*websocket.Conn
 	pools               = make(map[string]*Pool)
 	count               int16
-	lol                 string
 	poolMu              sync.Mutex
 	preSetLoctionBlue   [5]Position
 	preSetLoctionyellow [5]Position
+	limit               int16
 )
 
 var upgrader = websocket.Upgrader{
@@ -80,7 +83,6 @@ func adding(player *Player) string {
 	}
 	if len(poolsarray) == 0 {
 		poolId := uuid.New().String()
-		lol = poolId
 		playerPositions := map[string]Position{}
 		pos := Position{
 			X: 0,
@@ -158,10 +160,6 @@ func adding(player *Player) string {
 // }
 
 func poolBroadCast(id string, positionlist map[string]Position, msg any) {
-	fmt.Println("in broadcast")
-	fmt.Println("pools")
-	fmt.Println(pools)
-
 	pool, ok := pools[id]
 	if ok {
 		fmt.Println("pool")
@@ -169,25 +167,22 @@ func poolBroadCast(id string, positionlist map[string]Position, msg any) {
 		if pool != nil {
 			welcome := ServerMessage{Src: "server", PositionList: positionlist, MainMessage: msg}
 			fmt.Println("blue")
-
 			for _, player := range pool.Blue {
 				if player != nil && player.Conn != nil {
-					fmt.Println(player.Mutex)
-					// player.Mutex.Lock()
+					player.Mutex.Lock()
 					err := player.Conn.WriteJSON(welcome)
-					// player.Mutex.Unlock()
+					player.Mutex.Unlock()
 					if err != nil {
 						fmt.Println("Error writing JSON to Blue player:", err)
 					}
 				}
 			}
 			fmt.Println("yellow")
-
 			for _, player := range pool.Yellow {
 				if player != nil && player.Conn != nil {
-					// player.Mutex.Lock()
+					player.Mutex.Lock()
 					err := player.Conn.WriteJSON(welcome)
-					// player.Mutex.Unlock()
+					player.Mutex.Unlock()
 					if err != nil {
 						fmt.Println("Error writing JSON to Yellow player:", err)
 					}
@@ -200,9 +195,6 @@ func poolBroadCast(id string, positionlist map[string]Position, msg any) {
 }
 
 func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
-	if count >= 2 {
-		return
-	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println("Upgrade error:", err)
@@ -215,28 +207,30 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 		Status: "waiting",
 		Conn:   conn,
 	}
-	color := adding(&player)
-	info := make(map[string]string)
-	info["player_id"] = playerID
-	info["color"] = color
-	info["status"] = "waiting"
-	info["pool_id"] = player.PoolId
-	welcome := ServerMessage{Src: "server", PositionList: nil, MainMessage: info}
-	count += 1
-	player.Mutex.Lock()
-	err = conn.WriteJSON(welcome)
-	player.Mutex.Unlock()
-	if err != nil {
-		return
-	}
 
 	for {
+		color := adding(&player)
+		info := make(map[string]string)
+		info["player_id"] = playerID
+		info["color"] = color
+		info["status"] = "waiting"
+		info["pool_id"] = player.PoolId
+		welcome := ServerMessage{Src: "server", PositionList: nil, MainMessage: info}
+		count += 1
+		player.Mutex.Lock()
+		err = conn.WriteJSON(welcome)
+		player.Mutex.Unlock()
+		if err != nil {
+			return
+		}
+
+		// waiting state
 		for player.Status == "waiting" {
 
 		}
 
+		// starting state
 		countDuration := 5
-
 		if player.Status == "Starting" {
 			for i := 0; i <= countDuration; i++ {
 				mgs := make(map[string]any)
@@ -254,7 +248,7 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-
+		//playing state
 		changeStatus(player.PoolId, "Playing")
 
 		mgs := make(map[string]any)
@@ -266,8 +260,9 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("here now")
 		for player.Status == "Playing" {
-			var playerMeessage PlayerMessage
+			var playerMeessage Position
 			_, msg, err := conn.ReadMessage()
+			fmt.Println("in playing")
 
 			// if err != nil {
 			// 	count -= 1
@@ -295,23 +290,68 @@ func gameLogicAndMechanics(w http.ResponseWriter, r *http.Request) {
 			// }
 
 			err = json.Unmarshal(msg, &playerMeessage)
-			fmt.Println("bruh")
 			if err == nil {
 				fmt.Printf("Received: %+v\n", playerMeessage)
 				poolMu.Lock()
-				pools[player.PoolId].playerPositions[playerID] = playerMeessage.Position
+				pools[player.PoolId].playerPositions[playerID] = playerMeessage
 				poolMu.Unlock()
-				fmt.Println(player)
-				fmt.Println(pools[player.PoolId].playerPositions)
-				fmt.Println("pools", pools)
+				if !playerMeessage.alive {
+					fmt.Println("checking")
+					pools[player.PoolId].Mutex.Lock()
+					if player.Color == "Yellow" {
+						pools[player.PoolId].ScoreBlue += 1
+					} else {
+						pools[player.PoolId].ScoreYellow += 1
+					}
+					matchPoint(player.PoolId)
+					pools[player.PoolId].Mutex.Unlock()
+					fmt.Println("done checking")
+				}
 				poolBroadCast(player.PoolId, pools[player.PoolId].playerPositions, "")
 			} else {
 				fmt.Println("somthing is wrong", err)
 				break
 			}
 		}
-	}
 
+		// end state
+		for player.Status == "END" {
+			_, msg, err := conn.ReadMessage()
+			x := ""
+			if err == nil {
+				err = json.Unmarshal(msg, &x)
+				if err == nil {
+					if x == "NO" {
+						return
+					}
+				}
+			} else {
+				return
+				// pop function
+			}
+		}
+	}
+}
+
+func matchPoint(poolId string) {
+	pool := pools[poolId]
+	done := false
+	fmt.Println("in matchPoint")
+	if pool.ScoreBlue == limit {
+		pool.Result = "Blue"
+		done = true
+	}
+	if pool.ScoreYellow == limit {
+		pool.Result = "Yellow"
+		done = true
+	}
+	if done {
+		changeStatus(poolId, "End")
+		mgs := make(map[string]any)
+		mgs["status"] = "END"
+		poolBroadCast(poolId, nil, mgs)
+	}
+	fmt.Println("leaving matchPoint")
 }
 
 func changeStatus(poolId string, status string) {
@@ -365,6 +405,7 @@ func startGame() {
 func main() {
 	settingPree()
 	go startGame()
+	limit = 10
 	http.HandleFunc("/play", gameLogicAndMechanics)
 	port := "8080"
 	fmt.Println("WebSocket server started on port", port)
