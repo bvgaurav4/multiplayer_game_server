@@ -14,3 +14,7 @@
 - cheatEngine will be implemented using flask(python)
 - Cassandra, ScyllaDB for database
 - docker for deployment for now
+- match making will also be implemented using golang
+
+# Game Plot
+Co-Op game

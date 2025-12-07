@@ -381,6 +381,7 @@ func settingPree() {
 
 func startGame() {
 	for {
+		fmt.Println("checking which to start")
 		for keys := range pools {
 			if pools[keys].count == 1 && pools[keys].status != "Starting" {
 				pools[keys].status = "Starting"
