@@ -1,0 +1,145 @@
+{
+     "response": true,
+     "data": {
+         "payment_bank": [
+             {
+                 "value": "Kotak Mahindra Bank(3512942738)",
+                 "key": "KotakDB"
+             }
+         ],
+         "payment_modes": [
+             {
+                 "value": "Aadhaar Enabled Payment System (AEPS)",
+                 "key": "aeps"
+             },
+             {
+                 "value": "Account Transfer",
+                 "key": "account_transfer"
+             },
+             {
+                 "value": "Cash",
+                 "key": "cash"
+             },
+             {
+                 "value": "Cash Deposited In Bank",
+                 "key": "cash_deposited_in_bank"
+             },
+             {
+                 "value": "Cheque",
+                 "key": "cheque"
+             },
+             {
+                 "value": "Demand Draft",
+                 "key": "demand_draft"
+             },
+             {
+                 "value": "IMPS",
+                 "key": "imps"
+             },
+             {
+                 "value": "Internal Transfer",
+                 "key": "internal_transfer"
+             },
+             {
+                 "value": "Internet Banking",
+                 "key": "internet_banking"
+             },
+             {
+                 "value": "Nach",
+                 "key": "nach"
+             },
+             {
+                 "value": "Prepaid Card",
+                 "key": "prepaid_card"
+             },
+             {
+                 "value": "RTGS",
+                 "key": "rtgs"
+             },
+             {
+                 "value": "UPI",
+                 "key": "upi"
+             },
+             {
+                 "value": "Unstructured Supplementary Service Data (USSD)",
+                 "key": "ussd"
+             },
+             {
+                 "value": "Wallet",
+                 "key": "wallet"
+             }
+         ],
+         "beneficiary_account_type": [
+             {
+                 "value": "Cash Credit",
+                 "key": "cash_credit"
+             },
+             {
+                 "value": "Current Account",
+                 "key": "current_account"
+             },
+             {
+                 "value": "KCC Account",
+                 "key": "kcc_account"
+             },
+             {
+                 "value": "Overdraft Account",
+                 "key": "overdraft_account"
+             },
+             {
+                 "value": "Savings Account",
+                 "key": "savings_account"
+             }
+         ],
+         "payable": [
+             {
+                 "charge_id": 857,
+                 "charge_code": null,
+                 "total_outstanding_amount": 25000.0,
+                 "charge_label": null,
+                 "disbursal_schedule_id": 867,
+                 "type": "disbursal_amount"
+             },
+             {
+                 "charge_id": 858,
+                 "charge_code": null,
+                 "total_outstanding_amount": 25000.0,
+                 "charge_label": null,
+                 "disbursal_schedule_id": 868,
+                 "type": "disbursal_amount"
+             },
+             {
+                 "charge_id": 861,
+                 "charge_code": null,
+                 "total_outstanding_amount": 25000.0,
+                 "charge_label": null,
+                 "disbursal_schedule_id": 871,
+                 "type": "disbursal_amount"
+             },
+             {
+                 "charge_id": 862,
+                 "charge_code": null,
+                 "total_outstanding_amount": 25000.0,
+                 "charge_label": null,
+                 "disbursal_schedule_id": 872,
+                 "type": "disbursal_amount"
+             }
+         ],
+         "paid_to": [
+             {
+                 "key": "5388",
+                 "value": "John Michael Doe (applicant)"
+             },
+             {
+                 "key": "disbursement_account",
+                 "value": "Disbursement Account"
+             },
+             {
+                 "key": "other",
+                 "value": "Others"
+             }
+         ]
+     },
+     "error": null,
+     "message": "Data has been successfully retrieved !"
+ }

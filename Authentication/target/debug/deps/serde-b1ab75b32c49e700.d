@@ -1,0 +1,14 @@
+/mnt/c/g/pproject/multiplayer_game_server/Authentication/target/debug/deps/serde-b1ab75b32c49e700.d: /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /mnt/c/g/pproject/multiplayer_game_server/Authentication/target/debug/build/serde-f38b255d54569d39/out/private.rs
+
+/mnt/c/g/pproject/multiplayer_game_server/Authentication/target/debug/deps/libserde-b1ab75b32c49e700.rlib: /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /mnt/c/g/pproject/multiplayer_game_server/Authentication/target/debug/build/serde-f38b255d54569d39/out/private.rs
+
+/mnt/c/g/pproject/multiplayer_game_server/Authentication/target/debug/deps/libserde-b1ab75b32c49e700.rmeta: /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /mnt/c/g/pproject/multiplayer_game_server/Authentication/target/debug/build/serde-f38b255d54569d39/out/private.rs
+
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/mnt/c/g/pproject/multiplayer_game_server/Authentication/target/debug/build/serde-f38b255d54569d39/out/private.rs:
+
+# env-dep:OUT_DIR=/mnt/c/g/pproject/multiplayer_game_server/Authentication/target/debug/build/serde-f38b255d54569d39/out
