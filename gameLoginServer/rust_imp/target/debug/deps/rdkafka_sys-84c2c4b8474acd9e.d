@@ -1,0 +1,10 @@
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/deps/rdkafka_sys-84c2c4b8474acd9e.d: /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/lib.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/bindings.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/helpers.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/types.rs
+
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/deps/librdkafka_sys-84c2c4b8474acd9e.rlib: /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/lib.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/bindings.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/helpers.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/types.rs
+
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/deps/librdkafka_sys-84c2c4b8474acd9e.rmeta: /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/lib.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/bindings.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/helpers.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/types.rs
+
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/lib.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/bindings.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/helpers.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rdkafka-sys-4.10.0+2.12.1/src/types.rs:

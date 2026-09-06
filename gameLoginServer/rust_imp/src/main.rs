@@ -1,11 +1,11 @@
-use std::net::TcpListener;
+use std::net::{TcpListener,TcpStream};
+mod connectors;
+mod config;
 
-fn main() -> std::io::Result<()> {
-    let listener = TcpListener::bind("127.0.0.1:34254")?;
-
-    for stream in listener.incoming() {
-        println!("Client connected!");
-    }
-
-    Ok(())
+use std::io::{Read,Write};
+use connectors::sockets::{socket};
+use config::kafka_config::create_kafka_producer;
+fn main()  {
+    let a_ = create_kafka_producer();
+    let _ = socket();
 }

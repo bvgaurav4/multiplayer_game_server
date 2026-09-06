@@ -1,0 +1,13 @@
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/lib/cmake/RdKafka/RdKafkaConfig.cmake
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/lib/cmake/RdKafka/RdKafkaConfigVersion.cmake
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/lib/cmake/RdKafka/FindLZ4.cmake
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/lib/cmake/RdKafka/RdKafkaTargets.cmake
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/lib/cmake/RdKafka/RdKafkaTargets-debug.cmake
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/share/licenses/librdkafka/LICENSES.txt
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/lib/pkgconfig/rdkafka-static.pc
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/lib/librdkafka.a
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/include/librdkafka/rdkafka.h
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/include/librdkafka/rdkafka_mock.h
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/lib/pkgconfig/rdkafka++-static.pc
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/lib/librdkafka++.a
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/rust_imp/target/debug/build/rdkafka-sys-254590f4cd39482e/out/include/librdkafka/rdkafkacpp.h
