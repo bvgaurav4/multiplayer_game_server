@@ -1,0 +1,17 @@
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/scar/target/debug/deps/sasl2_sys-f8de716c0d92b558.d: /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/lib.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/hmac_md5.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/md5.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/prop.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/sasl.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/saslplug.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/saslutil.rs
+
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/scar/target/debug/deps/libsasl2_sys-f8de716c0d92b558.rlib: /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/lib.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/hmac_md5.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/md5.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/prop.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/sasl.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/saslplug.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/saslutil.rs
+
+/mnt/c/g/pproject/multiplayer_game_server/gameLoginServer/scar/target/debug/deps/libsasl2_sys-f8de716c0d92b558.rmeta: /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/lib.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/hmac_md5.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/md5.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/prop.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/sasl.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/saslplug.rs /home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/saslutil.rs
+
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/lib.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/hmac_md5.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/md5.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/prop.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/sasl.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/saslplug.rs:
+/home/bvgaurav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sasl2-sys-0.1.22+2.1.28/src/saslutil.rs:
+
+# env-dep:SASL_VERSION_MAJOR=
+# env-dep:SASL_VERSION_MINOR=
+# env-dep:SASL_VERSION_STEP=
