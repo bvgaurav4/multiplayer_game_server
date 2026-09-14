@@ -8,6 +8,7 @@ edition = "2024"
 env = "1.0.1"
 rdkafka = { version = "0.39", features = ["cmake-build", "ssl", "sasl"] }
 tokio = { version = "1", features = ["full"] }
+redis ={ version = "*" }
 # sudo apt install cmake rdkafka depends on this for some reason
 # sudo apt install -y libsasl2-dev
 # apt-cache policy libcurl4-openssl-dev
