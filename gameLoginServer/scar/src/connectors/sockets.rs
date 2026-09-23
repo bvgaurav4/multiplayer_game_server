@@ -1,5 +1,6 @@
 use std::net::{TcpListener,TcpStream};
 use std::io::{Read,Write};
+use crate::entities::structs::Players;
 
 fn handle_stream(mut stream: TcpStream) {
     let mut buffer = [0; 1024];
@@ -20,6 +21,11 @@ fn handle_stream(mut stream: TcpStream) {
         }
     }
 }
+
+// pub fn send_message(mut message: string,destination : string  )-> boolean{
+//     true
+// } 
+
 pub fn socket() -> std::io::Result<()> {
     let listener = TcpListener::bind("127.0.0.1:7878")?;
     // Binding to Socket address.

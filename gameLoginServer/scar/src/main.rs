@@ -1,7 +1,7 @@
 use std::net::{TcpListener,TcpStream};
 mod connectors;
 mod config;
-
+mod entities;
 use std::io::{Read,Write};
 use connectors::sockets::{socket};
 use config::kafka_config::create_kafka_producer;
