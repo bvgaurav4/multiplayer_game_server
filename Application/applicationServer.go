@@ -1,19 +1,24 @@
 package main
 
 import (
-	// "encoding/json"
-	"fmt"
-	// "net/http"
-	// "sync"
-	// "time"
+	"net/http"
 
-	"github.com/google/uuid"
-	// "github.com/gofiber/fiber/v2"
-	// "github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	fmt.Println("starting application server")
+	// Create a Gin router with default middleware (logger and recovery)
+	r := gin.Default()
 
-	fmt.Print(uuid.New().String())
+	// Define a simple GET endpoint
+	r.GET("/ping", func(c *gin.Context) {
+		// Return JSON response
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
+
+	// Start server on port 8080 (default)
+	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)
+	r.Run()
 }
