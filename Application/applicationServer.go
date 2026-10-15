@@ -5,43 +5,18 @@ import (
 	"sync"
 	"time"
 
+	Entity "GameApplication/entity"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	_ "github.com/lib/pq" // Blank import registers the driver
 )
-
-type User struct {
-	ID        string    `json:"id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Password  string    `json:"-"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type Match struct {
-	ID       string    `json:"id"`
-	Players  []string  `json:"players"`
-	Mode     string    `json:"mode"`
-	Result   string    `json:"result"`
-	PlayedAt time.Time `json:"played_at"`
-}
-
-type Friend struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	FriendID  string    `json:"friend_id"`
-	Alias     string    `json:"alias"`
-	Status    string    `json:"status"`
-	AddedAt   time.Time `json:"added_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
 
 var (
 	storeMu sync.RWMutex
-	users   = map[string]*User{}
-	matches = map[string]*Match{}
-	friends = map[string]*Friend{}
+	users   = map[string]*Entity.User{}
+	matches = map[string]*Entity.Match{}
+	friends = map[string]*Entity.Friend{}
 )
 
 func respondSuccess(c *gin.Context, data any) {
@@ -60,6 +35,7 @@ func respondFailure(c *gin.Context, status int, message string) {
 
 func main() {
 	r := gin.Default()
+	// db := pq.
 
 	// POST /users - create a user, returns a success or failure object
 	r.POST("/users", func(c *gin.Context) {
@@ -89,7 +65,7 @@ func main() {
 		}
 
 		now := time.Now().UTC()
-		user := &User{
+		user := &Entity.User{
 			ID:        uuid.New().String(),
 			Username:  req.Username,
 			Email:     req.Email,
@@ -225,7 +201,7 @@ func main() {
 		storeMu.RLock()
 		defer storeMu.RUnlock()
 
-		list := make([]*Match, 0, len(matches))
+		list := make([]*Entity.Match, 0, len(matches))
 		for _, m := range matches {
 			list = append(list, m)
 		}
@@ -243,7 +219,7 @@ func main() {
 		storeMu.RLock()
 		defer storeMu.RUnlock()
 
-		list := make([]*Friend, 0, len(friends))
+		list := make([]*Entity.Friend, 0, len(friends))
 		for _, f := range friends {
 			if userID != "" && f.UserID != userID {
 				continue
