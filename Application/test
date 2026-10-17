@@ -1,0 +1,6 @@
+create user : post  returns a success or failure object
+get user : GET returns  basics details of the users 
+updaate user : POST returns success or failure
+get matches : GET returns object 
+get friends : GET returns objects
+update user status : PUT returns objects
