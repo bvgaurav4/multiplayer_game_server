@@ -16,11 +16,6 @@ import (
 )
 
 func SignUp(ctx context.Context, p Provider.Provider, loginRequest reqres.SignUpRequest) (*User.User, error) {
-	// var req struct {
-	// 	Username string `json:"username"`
-	// 	Email    string `json:"email"`
-	// 	Password string `json:"password"`
-	// }
 	now := time.Now().UTC()
 	user := &User.User{
 		ID:        uuid.New().String(),
@@ -39,10 +34,6 @@ func SignUp(ctx context.Context, p Provider.Provider, loginRequest reqres.SignUp
 }
 
 func SignIn(ctx context.Context, p Provider.Provider, login reqres.LoginRequest) (*User.User, error) {
-	// var req struct {
-	// 	identifier string `json:"identifier"`
-	// 	Password   string `json:"password"`
-	// }
 	var user *User.User
 	user, err := User.GetUserWithUsernameOrEmail(ctx, p, login.Identifier)
 	if err != nil {

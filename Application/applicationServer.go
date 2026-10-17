@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"sort"
 	"sync"
 	"time"
 
@@ -37,6 +38,15 @@ func respondFailure(c *gin.Context, status int, message string) {
 		"success": false,
 		"error":   message,
 	})
+}
+
+func containsPlayer(m *match.Match, userID string) bool {
+	for _, player := range m.Players {
+		if player == userID {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
@@ -229,6 +239,55 @@ func main() {
 			"matches": list,
 			"count":   len(list),
 		})
+	})
+
+	// GET /users/:id/matches - get all the matches of a user, returns an object
+	r.GET("/users/:id/matches", func(c *gin.Context) {
+		var req reqres.GetMatchesRequest
+		if err := c.ShouldBindUri(&req); err != nil || req.UserID == "" {
+			respondFailure(c, http.StatusBadRequest, "user id is required")
+			return
+		}
+
+		storeMu.RLock()
+		defer storeMu.RUnlock()
+
+		list := make([]*match.Match, 0)
+		for _, m := range matches {
+			if !containsPlayer(m, req.UserID) {
+				continue
+			}
+			list = append(list, m)
+		}
+		sort.Slice(list, func(i, j int) bool {
+			return list[i].PlayedAt.After(list[j].PlayedAt)
+		})
+
+		respondSuccess(c, reqres.GetMatchesResponse{
+			UserID:  req.UserID,
+			Matches: list,
+			Count:   len(list),
+		})
+	})
+
+	// GET /matches/:id - get the details of a match, returns an object
+	r.GET("/matches/:id", func(c *gin.Context) {
+		var req reqres.GetMatchDetailsRequest
+		if err := c.ShouldBindUri(&req); err != nil || req.MatchID == "" {
+			respondFailure(c, http.StatusBadRequest, "match id is required")
+			return
+		}
+
+		storeMu.RLock()
+		defer storeMu.RUnlock()
+
+		m, ok := matches[req.MatchID]
+		if !ok {
+			respondFailure(c, http.StatusNotFound, "match not found")
+			return
+		}
+
+		respondSuccess(c, reqres.GetMatchDetailsResponse(*m))
 	})
 
 	// GET /friends - get the friends, returns objects
