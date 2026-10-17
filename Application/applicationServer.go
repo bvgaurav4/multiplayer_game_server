@@ -5,7 +5,13 @@ import (
 	"sync"
 	"time"
 
-	Entity "GameApplication/entity"
+	// played "GameApplication/entity/played"
+	Provider "GameApplication/entity/entityProvider"
+	friend "GameApplication/entity/friends"
+	match "GameApplication/entity/matches"
+	user "GameApplication/entity/user"
+	"GameApplication/handlers"
+	reqres "GameApplication/reqres"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -14,9 +20,9 @@ import (
 
 var (
 	storeMu sync.RWMutex
-	users   = map[string]*Entity.User{}
-	matches = map[string]*Entity.Match{}
-	friends = map[string]*Entity.Friend{}
+	users   = map[string]*user.User{}
+	matches = map[string]*match.Match{}
+	friends = map[string]*friend.Friend{}
 )
 
 func respondSuccess(c *gin.Context, data any) {
@@ -35,7 +41,19 @@ func respondFailure(c *gin.Context, status int, message string) {
 
 func main() {
 	r := gin.Default()
+	provider := Provider.Provider{}
 	// db := pq.
+	Provider.Provider.Conn(provider)
+
+	r.POST("/login", func(ctx *gin.Context) {
+		var signUpRequest reqres.SignUpRequest
+		handlers.SignUp(ctx, provider, signUpRequest)
+	})
+
+	r.POST("/create-account", func(ctx *gin.Context) {
+		var loginRequest reqres.LoginRequest
+		handlers.SignIn(ctx, provider, loginRequest)
+	})
 
 	// POST /users - create a user, returns a success or failure object
 	r.POST("/users", func(c *gin.Context) {
@@ -65,7 +83,7 @@ func main() {
 		}
 
 		now := time.Now().UTC()
-		user := &Entity.User{
+		user := &user.User{
 			ID:        uuid.New().String(),
 			Username:  req.Username,
 			Email:     req.Email,
@@ -89,8 +107,9 @@ func main() {
 		storeMu.RLock()
 		defer storeMu.RUnlock()
 
-		user, ok := users[c.Param("id")]
-		if !ok {
+		// user, ok := users[c.Param("id")]
+		user, err := handlers.GetUser(c, provider, c.Param("id"))
+		if err != nil {
 			respondFailure(c, http.StatusNotFound, "user not found")
 			return
 		}
@@ -201,7 +220,7 @@ func main() {
 		storeMu.RLock()
 		defer storeMu.RUnlock()
 
-		list := make([]*Entity.Match, 0, len(matches))
+		list := make([]*match.Match, 0, len(matches))
 		for _, m := range matches {
 			list = append(list, m)
 		}
@@ -219,7 +238,7 @@ func main() {
 		storeMu.RLock()
 		defer storeMu.RUnlock()
 
-		list := make([]*Entity.Friend, 0, len(friends))
+		list := make([]*friend.Friend, 0, len(friends))
 		for _, f := range friends {
 			if userID != "" && f.UserID != userID {
 				continue

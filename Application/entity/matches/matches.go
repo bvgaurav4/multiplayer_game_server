@@ -1,4 +1,4 @@
-package entity
+package matches
 
 import "time"
 

@@ -1,4 +1,4 @@
-package entity
+package played
 
 type Played struct {
 	UserId  string
