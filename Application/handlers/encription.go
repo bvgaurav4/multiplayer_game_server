@@ -19,7 +19,7 @@ var letterRunes = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func getRandomSalt() []byte {
 	var res []byte
-	for i := range b {
+	for i := 0; i <= 8; i++ {
 		res = append(res, letterRunes[rand.Intn(len(letterRunes))])
 	}
 	return res
@@ -35,7 +35,7 @@ func getSaltFromPass(s string) []byte {
 	fmt.Println("Salt:", digest.Salt)
 	fmt.Println("Hash:", digest.Hash)
 
-	return digest.Salt
+	return []byte(digest.Salt.String())
 }
 
 func encription(ctx context.Context, p Provider.Provider, s string, password string) string {
