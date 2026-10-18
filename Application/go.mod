@@ -1,6 +1,6 @@
 module GameApplication
 
-go 1.26.0
+go 1.27
 
 require github.com/google/uuid v1.6.0
 
@@ -34,6 +34,7 @@ require (
 	github.com/quic-go/quic-go v0.63.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.2 // indirect
+	gitlab.com/johnbass/phc v0.3.2 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.9.2 // indirect
 	golang.org/x/arch v0.32.0 // indirect
 	golang.org/x/crypto v0.58.0 // indirect

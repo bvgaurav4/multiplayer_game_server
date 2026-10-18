@@ -3,9 +3,48 @@ package handlers
 import (
 	Provider "GameApplication/entity/entityProvider"
 	"context"
+	"fmt"
+	"math/rand"
+	"time"
+
+	"gitlab.com/johnbass/phc"
+	"golang.org/x/crypto/argon2"
 )
 
-func encription(ctx context.Context, p Provider.Provider, s string) string {
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
-	return ""
+var letterRunes = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func getRandomSalt() []byte {
+	var res []byte
+	for i := range b {
+		res = append(res, letterRunes[rand.Intn(len(letterRunes))])
+	}
+	return res
+}
+
+func getSaltFromPass(s string) []byte {
+
+	digest, err := phc.Parse(s)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Salt:", digest.Salt)
+	fmt.Println("Hash:", digest.Hash)
+
+	return digest.Salt
+}
+
+func encription(ctx context.Context, p Provider.Provider, s string, password string) string {
+	var salt []byte
+	if password == "" {
+		salt = getRandomSalt()
+	} else {
+		salt = getSaltFromPass(password)
+	}
+	key := argon2.IDKey([]byte(s), salt, 1, 2*1024*1024, 4, 32)
+	return string(key)
 }

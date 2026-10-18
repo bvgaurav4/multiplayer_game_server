@@ -21,7 +21,7 @@ func SignUp(ctx context.Context, p Provider.Provider, loginRequest reqres.SignUp
 		ID:        uuid.New().String(),
 		Username:  loginRequest.Username,
 		Email:     loginRequest.Email,
-		Password:  encription(ctx, p, loginRequest.Password),
+		Password:  encription(ctx, p, loginRequest.Password, ""),
 		Status:    "offline",
 		CreatedAt: now,
 		UpdatedAt: now,
@@ -39,7 +39,7 @@ func SignIn(ctx context.Context, p Provider.Provider, login reqres.LoginRequest)
 	if err != nil {
 		return nil, err
 	}
-	if user.Password != encription(ctx, p, login.Password) {
+	if user.Password != encription(ctx, p, login.Password, user.Password) {
 		return nil, fmt.Errorf("%s password is incorrect for the user ", login.Identifier)
 	} else {
 		return user, nil
