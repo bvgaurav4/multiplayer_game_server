@@ -1,8 +1,9 @@
 package main
 
 import (
+	"errors"
 	"net/http"
-	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,7 +23,6 @@ import (
 var (
 	storeMu sync.RWMutex
 	users   = map[string]*user.User{}
-	matches = map[string]*match.Match{}
 	friends = map[string]*friend.Friend{}
 )
 
@@ -40,15 +40,6 @@ func respondFailure(c *gin.Context, status int, message string) {
 	})
 }
 
-func containsPlayer(m *match.Match, userID string) bool {
-	for _, player := range m.Players {
-		if player == userID {
-			return true
-		}
-	}
-	return false
-}
-
 func main() {
 	r := gin.Default()
 	provider := Provider.Provider{}
@@ -56,13 +47,14 @@ func main() {
 	Provider.Provider.Conn(provider)
 
 	r.POST("/login", func(ctx *gin.Context) {
-		var signUpRequest reqres.SignUpRequest
-		handlers.SignUp(ctx, provider, signUpRequest)
+		var loginRequest reqres.LoginRequest
+		handlers.SignIn(ctx, provider, loginRequest)
+
 	})
 
 	r.POST("/create-account", func(ctx *gin.Context) {
-		var loginRequest reqres.LoginRequest
-		handlers.SignIn(ctx, provider, loginRequest)
+		var signUpRequest reqres.SignUpRequest
+		handlers.SignUp(ctx, provider, signUpRequest)
 	})
 
 	// POST /users - create a user, returns a success or failure object
@@ -225,22 +217,6 @@ func main() {
 		})
 	})
 
-	// GET /matches - get the matches, returns an object
-	r.GET("/matches", func(c *gin.Context) {
-		storeMu.RLock()
-		defer storeMu.RUnlock()
-
-		list := make([]*match.Match, 0, len(matches))
-		for _, m := range matches {
-			list = append(list, m)
-		}
-
-		respondSuccess(c, gin.H{
-			"matches": list,
-			"count":   len(list),
-		})
-	})
-
 	// GET /users/:id/matches - get all the matches of a user, returns an object
 	r.GET("/users/:id/matches", func(c *gin.Context) {
 		var req reqres.GetMatchesRequest
@@ -249,25 +225,13 @@ func main() {
 			return
 		}
 
-		storeMu.RLock()
-		defer storeMu.RUnlock()
-
-		list := make([]*match.Match, 0)
-		for _, m := range matches {
-			if !containsPlayer(m, req.UserID) {
-				continue
-			}
-			list = append(list, m)
+		res, err := handlers.GetMatches(c, provider, req)
+		if err != nil {
+			respondFailure(c, http.StatusInternalServerError, "could not fetch matches")
+			return
 		}
-		sort.Slice(list, func(i, j int) bool {
-			return list[i].PlayedAt.After(list[j].PlayedAt)
-		})
 
-		respondSuccess(c, reqres.GetMatchesResponse{
-			UserID:  req.UserID,
-			Matches: list,
-			Count:   len(list),
-		})
+		respondSuccess(c, res)
 	})
 
 	// GET /matches/:id - get the details of a match, returns an object
@@ -278,16 +242,38 @@ func main() {
 			return
 		}
 
-		storeMu.RLock()
-		defer storeMu.RUnlock()
-
-		m, ok := matches[req.MatchID]
-		if !ok {
-			respondFailure(c, http.StatusNotFound, "match not found")
+		res, err := handlers.GetMatchDetails(c, provider, req)
+		if err != nil {
+			if errors.Is(err, match.ErrMatchNotFound) {
+				respondFailure(c, http.StatusNotFound, "match not found")
+				return
+			}
+			respondFailure(c, http.StatusInternalServerError, "could not fetch match")
 			return
 		}
 
-		respondSuccess(c, reqres.GetMatchDetailsResponse(*m))
+		respondSuccess(c, *res)
+	})
+
+	// POST /feedback - submit feedback, returns the created object
+	r.POST("/feedback", func(c *gin.Context) {
+		var req reqres.CreateFeedbackRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			respondFailure(c, http.StatusBadRequest, "invalid request body")
+			return
+		}
+		if strings.TrimSpace(req.Message) == "" {
+			respondFailure(c, http.StatusBadRequest, "message is required")
+			return
+		}
+
+		res, err := handlers.CreateFeedback(c, provider, req)
+		if err != nil {
+			respondFailure(c, http.StatusInternalServerError, "could not save feedback")
+			return
+		}
+
+		respondSuccess(c, res)
 	})
 
 	// GET /friends - get the friends, returns objects

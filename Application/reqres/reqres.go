@@ -1,6 +1,9 @@
 package reqres
 
-import match "GameApplication/entity/matches"
+import (
+	match "GameApplication/entity/matches"
+	"time"
+)
 
 type SignUpRequest struct {
 	Username string `json:"username"`
@@ -30,3 +33,16 @@ type GetMatchDetailsRequest struct {
 }
 
 type GetMatchDetailsResponse = match.Match
+
+// POST /feedback
+type CreateFeedbackRequest struct {
+	UserID  string `json:"user_id"`
+	Message string `json:"message"`
+}
+
+type CreateFeedbackResponse struct {
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	Message   string    `json:"message"`
+	CreatedAt time.Time `json:"created_at"`
+}
