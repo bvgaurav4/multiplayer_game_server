@@ -14,10 +14,13 @@ type Provider struct {
 	DB     *sqlx.DB
 }
 
-func (p Provider) Conn() (*sqlx.DB, error) {
+func (p *Provider) Conn() (*sqlx.DB, error) {
+	if p.DB == nil {
+		return nil, fmt.Errorf("database is not connected")
+	}
+
 	return p.DB, nil
 }
-
 func (p *Provider) Connect() error {
 	fmt.Print("connectin to ", p)
 	db, err := sqlx.Connect("pgx", p.Config.Database.DSN())
