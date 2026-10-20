@@ -4,27 +4,39 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"sync"
-	"time"
 
 	// played "GameApplication/entity/played"
 	Provider "GameApplication/entity/entityProvider"
-	friend "GameApplication/entity/friends"
 	match "GameApplication/entity/matches"
 	user "GameApplication/entity/user"
 	"GameApplication/handlers"
 	reqres "GameApplication/reqres"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	_ "github.com/lib/pq" // Blank import registers the driver
 )
 
-var (
-	storeMu sync.RWMutex
-	users   = map[string]*user.User{}
-	friends = map[string]*friend.Friend{}
-)
+type Config struct {
+	Database DatabaseConfig `toml:"database"`
+}
+
+type DatabaseConfig struct {
+	Host     string `toml:"host"`
+	Port     int    `toml:"port"`
+	User     string `toml:"user"`
+	Password string `toml:"password"`
+	Name     string `toml:"name"`
+	SSLMode  string `toml:"sslmode"`
+
+	Pool PoolConfig `toml:"pool"`
+}
+
+type PoolConfig struct {
+	MaxOpenConns           int `toml:"max_open_conns"`
+	MaxIdleConns           int `toml:"max_idle_conns"`
+	ConnMaxIdleTimeMinutes int `toml:"conn_max_idle_time_minutes"`
+	ConnMaxLifetimeMinutes int `toml:"conn_max_lifetime_minutes"`
+}
 
 func respondSuccess(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, gin.H{
@@ -48,8 +60,24 @@ func main() {
 
 	r.POST("/login", func(ctx *gin.Context) {
 		var loginRequest reqres.LoginRequest
-		handlers.SignIn(ctx, provider, loginRequest)
+		if err := ctx.ShouldBindJSON(&loginRequest); err != nil {
+			respondFailure(ctx, http.StatusBadRequest, "invalid request body")
+			return
+		}
 
+		user, session, err := handlers.SignIn(ctx, provider, loginRequest)
+		if err != nil {
+			respondFailure(ctx, http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		respondSuccess(ctx, reqres.LoginResponse{
+			UserID:                user.ID,
+			Token:                 session.Token,
+			RefreshToken:          session.RefreshToken,
+			TokenExpiresAt:        session.TokenExpiresAt,
+			RefreshTokenExpiresAt: session.RefreshTokenExpiresAt,
+		})
 	})
 
 	r.POST("/create-account", func(ctx *gin.Context) {
@@ -74,55 +102,43 @@ func main() {
 			return
 		}
 
-		storeMu.Lock()
-		defer storeMu.Unlock()
-
-		for _, u := range users {
-			if u.Email == req.Email {
-				respondFailure(c, http.StatusConflict, "email already registered")
+		created, err := handlers.SignUp(c, provider, reqres.SignUpRequest{
+			Username: req.Username,
+			Email:    req.Email,
+			Password: req.Password,
+		})
+		if err != nil {
+			if errors.Is(err, user.ErrUserAlreadyExists) {
+				respondFailure(c, http.StatusConflict, "email or username already registered")
 				return
 			}
+			respondFailure(c, http.StatusInternalServerError, "could not create user")
+			return
 		}
-
-		now := time.Now().UTC()
-		user := &user.User{
-			ID:        uuid.New().String(),
-			Username:  req.Username,
-			Email:     req.Email,
-			Password:  req.Password,
-			Status:    "offline",
-			CreatedAt: now,
-			UpdatedAt: now,
-		}
-		users[user.ID] = user
 
 		respondSuccess(c, gin.H{
-			"id":       user.ID,
-			"username": user.Username,
-			"email":    user.Email,
-			"status":   user.Status,
+			"id":       created.ID,
+			"username": created.Username,
+			"email":    created.Email,
+			"status":   created.Status,
 		})
 	})
 
 	// GET /users/:id - get the basic details of a user
 	r.GET("/users/:id", func(c *gin.Context) {
-		storeMu.RLock()
-		defer storeMu.RUnlock()
-
-		// user, ok := users[c.Param("id")]
-		user, err := handlers.GetUser(c, provider, c.Param("id"))
+		found, err := handlers.GetUserByID(c, provider, c.Param("id"))
 		if err != nil {
 			respondFailure(c, http.StatusNotFound, "user not found")
 			return
 		}
 
 		respondSuccess(c, gin.H{
-			"id":         user.ID,
-			"username":   user.Username,
-			"email":      user.Email,
-			"status":     user.Status,
-			"created_at": user.CreatedAt,
-			"updated_at": user.UpdatedAt,
+			"id":         found.ID,
+			"username":   found.Username,
+			"email":      found.Email,
+			"status":     found.Status,
+			"created_at": found.CreatedAt,
+			"updated_at": found.UpdatedAt,
 		})
 	})
 
@@ -143,39 +159,28 @@ func main() {
 			return
 		}
 
-		storeMu.Lock()
-		defer storeMu.Unlock()
-
-		user, ok := users[c.Param("id")]
-		if !ok {
-			respondFailure(c, http.StatusNotFound, "user not found")
+		updated, err := handlers.UpdateUser(c, provider, c.Param("id"), &user.User{
+			Username: req.Username,
+			Email:    req.Email,
+			Password: req.Password,
+		})
+		if err != nil {
+			switch {
+			case errors.Is(err, user.ErrUserNotFound):
+				respondFailure(c, http.StatusNotFound, "user not found")
+			case errors.Is(err, user.ErrUserAlreadyExists):
+				respondFailure(c, http.StatusConflict, "email or username already registered")
+			default:
+				respondFailure(c, http.StatusInternalServerError, "could not update user")
+			}
 			return
 		}
-		if req.Email != "" {
-			for id, u := range users {
-				if id != user.ID && u.Email == req.Email {
-					respondFailure(c, http.StatusConflict, "email already registered")
-					return
-				}
-			}
-		}
-
-		if req.Username != "" {
-			user.Username = req.Username
-		}
-		if req.Email != "" {
-			user.Email = req.Email
-		}
-		if req.Password != "" {
-			user.Password = req.Password
-		}
-		user.UpdatedAt = time.Now().UTC()
 
 		respondSuccess(c, gin.H{
-			"id":         user.ID,
-			"username":   user.Username,
-			"email":      user.Email,
-			"updated_at": user.UpdatedAt,
+			"id":         updated.ID,
+			"username":   updated.Username,
+			"email":      updated.Email,
+			"updated_at": updated.UpdatedAt,
 		})
 	})
 
@@ -197,23 +202,21 @@ func main() {
 			return
 		}
 
-		storeMu.Lock()
-		defer storeMu.Unlock()
-
-		user, ok := users[c.Param("id")]
-		if !ok {
-			respondFailure(c, http.StatusNotFound, "user not found")
+		updated, err := handlers.UpdateUserStatus(c, provider, c.Param("id"), req.Status)
+		if err != nil {
+			if errors.Is(err, user.ErrUserNotFound) {
+				respondFailure(c, http.StatusNotFound, "user not found")
+				return
+			}
+			respondFailure(c, http.StatusInternalServerError, "could not update user status")
 			return
 		}
 
-		user.Status = req.Status
-		user.UpdatedAt = time.Now().UTC()
-
 		respondSuccess(c, gin.H{
-			"id":         user.ID,
-			"username":   user.Username,
-			"status":     user.Status,
-			"updated_at": user.UpdatedAt,
+			"id":         updated.ID,
+			"username":   updated.Username,
+			"status":     updated.Status,
+			"updated_at": updated.UpdatedAt,
 		})
 	})
 
@@ -278,17 +281,10 @@ func main() {
 
 	// GET /friends - get the friends, returns objects
 	r.GET("/friends", func(c *gin.Context) {
-		userID := c.Query("user_id")
-
-		storeMu.RLock()
-		defer storeMu.RUnlock()
-
-		list := make([]*friend.Friend, 0, len(friends))
-		for _, f := range friends {
-			if userID != "" && f.UserID != userID {
-				continue
-			}
-			list = append(list, f)
+		list, err := handlers.GetFriends(c, provider, c.Query("user_id"))
+		if err != nil {
+			respondFailure(c, http.StatusInternalServerError, "could not fetch friends")
+			return
 		}
 
 		respondSuccess(c, gin.H{

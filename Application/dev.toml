@@ -1,0 +1,13 @@
+[database]
+host = "localhost"
+port = 5432
+user = "postgres"
+password = "your_password"
+name = "mydb"
+sslmode = "disable"
+
+[database.pool]
+max_open_conns = 20
+max_idle_conns = 5
+conn_max_idle_time_minutes = 5
+conn_max_lifetime_minutes = 30

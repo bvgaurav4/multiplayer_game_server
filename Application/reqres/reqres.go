@@ -12,8 +12,17 @@ type SignUpRequest struct {
 }
 
 type LoginRequest struct {
-	Identifier string `json:"identifier"`
-	Password   string `json:"password"`
+	Identifier   string `json:"identifier"`
+	Password     string `json:"password"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type LoginResponse struct {
+	UserID                string    `json:"user_id"`
+	Token                 string    `json:"token"`
+	RefreshToken          string    `json:"refresh_token"`
+	TokenExpiresAt        time.Time `json:"token_expires_at"`
+	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
 }
 
 // GET /users/:id/matches
@@ -22,7 +31,7 @@ type GetMatchesRequest struct {
 }
 
 type GetMatchesResponse struct {
-	UserID string         `json:"user_id"`
+	UserID  string         `json:"user_id"`
 	Matches []*match.Match `json:"matches"`
 	Count   int            `json:"count"`
 }
