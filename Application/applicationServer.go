@@ -2,10 +2,15 @@ package main
 
 import (
 	"errors"
+	"flag"
+	"fmt"
 	"net/http"
+
 	"strings"
 
 	// played "GameApplication/entity/played"
+	Config "GameApplication/config"
+
 	Provider "GameApplication/entity/entityProvider"
 	match "GameApplication/entity/matches"
 	user "GameApplication/entity/user"
@@ -15,28 +20,6 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq" // Blank import registers the driver
 )
-
-type Config struct {
-	Database DatabaseConfig `toml:"database"`
-}
-
-type DatabaseConfig struct {
-	Host     string `toml:"host"`
-	Port     int    `toml:"port"`
-	User     string `toml:"user"`
-	Password string `toml:"password"`
-	Name     string `toml:"name"`
-	SSLMode  string `toml:"sslmode"`
-
-	Pool PoolConfig `toml:"pool"`
-}
-
-type PoolConfig struct {
-	MaxOpenConns           int `toml:"max_open_conns"`
-	MaxIdleConns           int `toml:"max_idle_conns"`
-	ConnMaxIdleTimeMinutes int `toml:"conn_max_idle_time_minutes"`
-	ConnMaxLifetimeMinutes int `toml:"conn_max_lifetime_minutes"`
-}
 
 func respondSuccess(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, gin.H{
@@ -54,9 +37,19 @@ func respondFailure(c *gin.Context, status int, message string) {
 
 func main() {
 	r := gin.Default()
-	provider := Provider.Provider{}
-	// db := pq.
-	Provider.Provider.Conn(provider)
+	env := flag.String("env", "C:\\g\\pproject\\multiplayer_game_server\\Application\\dev.toml", "Environment file")
+
+	config, err := Config.Load(*env)
+	if err != nil {
+		fmt.Println("load config: %w", err)
+		return
+	}
+	provider := Provider.Provider{Config: config}
+	err = provider.Connect()
+	if err != nil {
+		fmt.Errorf("load config: %w", err)
+		return
+	}
 
 	r.POST("/login", func(ctx *gin.Context) {
 		var loginRequest reqres.LoginRequest

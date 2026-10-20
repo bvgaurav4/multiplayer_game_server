@@ -30,12 +30,13 @@ type PoolConfig struct {
 }
 
 func Load(path string) (*Config, error) {
+	fmt.Println("loading env from  ", path)
 	var cfg Config
 
 	if _, err := toml.DecodeFile(path, &cfg); err != nil {
 		return nil, fmt.Errorf("load config: %w", err)
 	}
-
+	fmt.Println("loaded config ", cfg)
 	return &cfg, nil
 }
 

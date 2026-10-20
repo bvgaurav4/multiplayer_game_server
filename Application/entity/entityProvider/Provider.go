@@ -1,6 +1,8 @@
 package entityProvider
 
 import (
+	Config "GameApplication/config"
+	"fmt"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -8,13 +10,19 @@ import (
 )
 
 type Provider struct {
-	DB string
+	Config *Config.Config
+	DB     *sqlx.DB
 }
 
 func (p Provider) Conn() (*sqlx.DB, error) {
-	db, err := sqlx.Connect("pgx", p.DB)
+	return p.DB, nil
+}
+
+func (p *Provider) Connect() error {
+	fmt.Print("connectin to ", p)
+	db, err := sqlx.Connect("pgx", p.Config.Database.DSN())
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Configure the connection pool
@@ -22,6 +30,6 @@ func (p Provider) Conn() (*sqlx.DB, error) {
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxIdleTime(5 * time.Minute)
 	db.SetConnMaxLifetime(30 * time.Minute)
-
-	return db, nil
+	p.DB = db
+	return nil
 }
